@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { MealPreview } from "@/services/mealdb";
+import { Button } from "@/components/ui/Button";
 
 interface RecipeCardProps {
   recipe: MealPreview;
@@ -23,10 +24,9 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         </h3>
         
         <div className="mt-auto pt-4 flex justify-end">
-          {/* Usamos el componente oficial de MD3 (registrado en el wrapper) */}
-          <md-filled-button href={`/recipes/${recipe.idMeal}`}>
+          <Button href={`/recipes/${recipe.idMeal}`}>
             Ver Receta
-          </md-filled-button>
+          </Button>
         </div>
       </div>
     </div>

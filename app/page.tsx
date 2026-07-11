@@ -2,8 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { UserButton, useUser } from "@clerk/nextjs";
+import { Refrigerator } from "lucide-react";
 import { MealDBService, MealPreview } from "@/services/mealdb";
 import { RecipeCard } from "@/components/features/RecipeCard";
+import { Button } from "@/components/ui/Button";
+import { TextField } from "@/components/ui/TextField";
+import { Chip } from "@/components/ui/Chip";
 
 export default function Home() {
   const { isSignedIn } = useUser();
@@ -74,7 +78,7 @@ export default function Home() {
           {isSignedIn ? (
             <UserButton />
           ) : (
-            <md-filled-button href="/sign-in">Entrar</md-filled-button>
+            <Button href="/sign-in">Entrar</Button>
           )}
         </div>
       </header>
@@ -84,35 +88,35 @@ export default function Home() {
         {/* Widget Mi Heladera */}
         <section className="bg-primary-container p-6 rounded-3xl flex flex-col gap-4">
           <h2 className="text-xl font-semibold text-on-primary-container flex items-center gap-2">
-            <md-icon>kitchen</md-icon>
+            <Refrigerator className="w-6 h-6" />
             Mi Heladera
           </h2>
           <p className="text-on-primary-container/80">¿Qué ingredientes tienes hoy? Añade uno principal para ver qué cocinar.</p>
           
-          <div className="flex flex-col sm:flex-row gap-4">
-            <md-outlined-text-field
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-stretch">
+            <TextField
               label="Ej. Chicken, Tomato..."
               value={ingredientInput}
-              onInput={(e: any) => setIngredientInput(e.target.value)}
-              onKeyDown={(e: any) => e.key === "Enter" && handleAddIngredient()}
-              className="flex-grow"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIngredientInput(e.target.value)}
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && handleAddIngredient()}
+              className="flex-grow w-full"
             />
-            <md-filled-button onClick={handleAddIngredient}>
+            <Button onClick={handleAddIngredient} className="h-14">
               Añadir
-            </md-filled-button>
+            </Button>
           </div>
 
           {fridgeIngredients.length > 0 && (
-            <md-chip-set>
+            <div className="flex flex-wrap gap-2 mt-2">
               {fridgeIngredients.map(ing => (
-                <md-filter-chip
+                <Chip
                   key={ing}
                   label={ing}
                   selected
-                  onClick={() => handleRemoveIngredient(ing)}
+                  onRemove={() => handleRemoveIngredient(ing)}
                 />
               ))}
-            </md-chip-set>
+            </div>
           )}
         </section>
 
