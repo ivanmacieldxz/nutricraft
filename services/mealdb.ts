@@ -38,6 +38,25 @@ export const MealDBService = {
     const data: MealDBResponse<MealPreview> = await res.json();
     return data.meals || [];
   },
+  /**
+   * Filtra recetas por categoría (ej: Seafood, Beef)
+   */
+  async filterByCategory(category: string): Promise<MealPreview[]> {
+    const res = await fetch(`${MEALDB_BASE_URL}/filter.php?c=${category}`);
+    if (!res.ok) throw new Error("Error fetching meals by category");
+    const data: MealDBResponse<MealPreview> = await res.json();
+    return data.meals || [];
+  },
+
+  /**
+   * Filtra recetas por región/área (ej: Italian, Mexican)
+   */
+  async filterByArea(area: string): Promise<MealPreview[]> {
+    const res = await fetch(`${MEALDB_BASE_URL}/filter.php?a=${area}`);
+    if (!res.ok) throw new Error("Error fetching meals by area");
+    const data: MealDBResponse<MealPreview> = await res.json();
+    return data.meals || [];
+  },
 
   /**
    * Obtiene recetas aleatorias para poblar la pantalla de inicio
