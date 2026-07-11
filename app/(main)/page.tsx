@@ -1,8 +1,8 @@
 "use client";
 
+import * as React from "react";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { useInView } from "react-intersection-observer";
 import { MealDBService, MealPreview } from "@/services/mealdb";
 import { RecipeCard } from "@/components/features/RecipeCard";
 
@@ -19,9 +19,7 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
 
-  const { ref, inView } = useInView({
-    threshold: 0.1,
-  });
+  // Eliminado useInView
 
   // Fetch initial results when search params change
   useEffect(() => {
@@ -67,21 +65,41 @@ export default function Home() {
     fetchRecipes();
   }, [query, type]);
 
-  // Handle infinite scrolling
+  const observer = React.useRef<IntersectionObserver | null>(null);
+  const lastElementRef = React.useCallback(
+    (node: HTMLDivElement) => {
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          setPage((prevPage) => prevPage + 1);
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore]
+  );
+
+  // Escuchar cambios de página para cargar más
   useEffect(() => {
-    if (inView && hasMore && !loading) {
-      const nextPage = page + 1;
-      const startIndex = page * ITEMS_PER_PAGE;
+    if (page > 1) {
+      const startIndex = (page - 1) * ITEMS_PER_PAGE;
       const endIndex = startIndex + ITEMS_PER_PAGE;
       const newItems = allRecipes.slice(startIndex, endIndex);
       
       if (newItems.length > 0) {
-        setDisplayedRecipes((prev) => [...prev, ...newItems]);
-        setPage(nextPage);
+        setDisplayedRecipes((prev) => {
+          // Filtrar duplicados por react strict mode
+          const existingIds = new Set(prev.map((r) => r.idMeal));
+          const uniqueItems = newItems.filter((i) => !existingIds.has(i.idMeal));
+          return [...prev, ...uniqueItems];
+        });
         setHasMore(endIndex < allRecipes.length);
+      } else {
+        setHasMore(false);
       }
     }
-  }, [inView, hasMore, loading, page, allRecipes]);
+  }, [page, allRecipes]);
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col gap-6">
@@ -115,8 +133,14 @@ export default function Home() {
           
           {/* Intersection Observer Trigger Element */}
           {hasMore && (
-            <div ref={ref} className="flex justify-center py-8">
+            <div ref={lastElementRef} className="flex flex-col items-center justify-center py-8 gap-4">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <button 
+                onClick={() => setPage(p => p + 1)}
+                className="text-sm text-primary hover:underline"
+              >
+                Cargar más
+              </button>
             </div>
           )}
           
