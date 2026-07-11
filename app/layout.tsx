@@ -24,6 +24,7 @@ export const metadata: Metadata = {
 };
 
 import { ClerkProvider } from '@clerk/nextjs';
+import { MaterialWrapper } from '@/components/ui/MaterialWrapper';
 
 export default function RootLayout({
   children,
@@ -34,9 +35,13 @@ export default function RootLayout({
     <ClerkProvider>
       <html
         lang="en"
-        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased bg-background text-on-background`}
       >
-        <body className="min-h-full flex flex-col">{children}</body>
+        <body className="min-h-full flex flex-col">
+          <MaterialWrapper>
+            {children}
+          </MaterialWrapper>
+        </body>
       </html>
     </ClerkProvider>
   );

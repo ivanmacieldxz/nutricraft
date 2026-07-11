@@ -1,64 +1,142 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect } from "react";
+import { UserButton, useUser } from "@clerk/nextjs";
+import { MealDBService, MealPreview } from "@/services/mealdb";
+import { RecipeCard } from "@/components/features/RecipeCard";
 
 export default function Home() {
+  const { isSignedIn } = useUser();
+  const [recipes, setRecipes] = useState<MealPreview[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Heladera Widget States
+  const [ingredientInput, setIngredientInput] = useState("");
+  const [fridgeIngredients, setFridgeIngredients] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Carga inicial
+    loadDefaultRecipes();
+  }, []);
+
+  const loadDefaultRecipes = async () => {
+    setLoading(true);
+    try {
+      const data = await MealDBService.getRandomMeals(8);
+      setRecipes(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const searchByFridge = async (ingredients: string[]) => {
+    if (ingredients.length === 0) {
+      return loadDefaultRecipes();
+    }
+    setLoading(true);
+    try {
+      // TheMealDB free tier soporta filtrado por un ingrediente principal
+      // Para esta versión usamos el primer ingrediente
+      const data = await MealDBService.filterByIngredient(ingredients[0]);
+      setRecipes(data || []);
+    } catch (error) {
+      console.error(error);
+      setRecipes([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddIngredient = () => {
+    const ing = ingredientInput.trim().toLowerCase();
+    if (ing && !fridgeIngredients.includes(ing)) {
+      const newIngredients = [...fridgeIngredients, ing];
+      setFridgeIngredients(newIngredients);
+      setIngredientInput("");
+      searchByFridge(newIngredients);
+    }
+  };
+
+  const handleRemoveIngredient = (ing: string) => {
+    const newIngredients = fridgeIngredients.filter(i => i !== ing);
+    setFridgeIngredients(newIngredients);
+    searchByFridge(newIngredients);
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="flex flex-col min-h-screen">
+      {/* Header */}
+      <header className="flex items-center justify-between p-4 bg-surface shadow-sm">
+        <h1 className="text-2xl font-bold text-primary">NutriCraft</h1>
+        <div>
+          {isSignedIn ? (
+            <UserButton />
+          ) : (
+            <md-filled-button href="/sign-in">Entrar</md-filled-button>
+          )}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+      </header>
+
+      <main className="flex-grow p-4 max-w-5xl mx-auto w-full flex flex-col gap-8">
+        
+        {/* Widget Mi Heladera */}
+        <section className="bg-primary-container p-6 rounded-3xl flex flex-col gap-4">
+          <h2 className="text-xl font-semibold text-on-primary-container flex items-center gap-2">
+            <md-icon>kitchen</md-icon>
+            Mi Heladera
+          </h2>
+          <p className="text-on-primary-container/80">¿Qué ingredientes tienes hoy? Añade uno principal para ver qué cocinar.</p>
+          
+          <div className="flex flex-col sm:flex-row gap-4">
+            <md-outlined-text-field
+              label="Ej. Chicken, Tomato..."
+              value={ingredientInput}
+              onInput={(e: any) => setIngredientInput(e.target.value)}
+              onKeyDown={(e: any) => e.key === "Enter" && handleAddIngredient()}
+              className="flex-grow"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+            <md-filled-button onClick={handleAddIngredient}>
+              Añadir
+            </md-filled-button>
+          </div>
+
+          {fridgeIngredients.length > 0 && (
+            <md-chip-set>
+              {fridgeIngredients.map(ing => (
+                <md-filter-chip
+                  key={ing}
+                  label={ing}
+                  selected
+                  onClick={() => handleRemoveIngredient(ing)}
+                />
+              ))}
+            </md-chip-set>
+          )}
+        </section>
+
+        {/* Listado de Recetas */}
+        <section className="flex flex-col gap-4">
+          <h2 className="text-2xl font-bold">Explorar Recetas</h2>
+          
+          {loading ? (
+            <div className="flex justify-center p-8">
+              <span className="text-muted-foreground">Cargando recetas...</span>
+            </div>
+          ) : recipes.length === 0 ? (
+            <div className="flex justify-center p-8 bg-surface-variant rounded-2xl">
+              <span className="text-on-surface-variant">No se encontraron recetas con esos ingredientes.</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {recipes.map(recipe => (
+                <RecipeCard key={recipe.idMeal} recipe={recipe} />
+              ))}
+            </div>
+          )}
+        </section>
+
       </main>
     </div>
   );
