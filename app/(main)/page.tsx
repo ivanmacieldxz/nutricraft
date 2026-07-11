@@ -16,6 +16,7 @@ export default function Home() {
   const [allRecipes, setAllRecipes] = useState<MealPreview[]>([]);
   const [displayedRecipes, setDisplayedRecipes] = useState<MealPreview[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
 
@@ -27,11 +28,15 @@ export default function Home() {
       setLoading(true);
       setPage(1);
       try {
-        let data: MealPreview[] = [];
         if (!query) {
-          // If no query, we show some default/random recipes
-          data = await MealDBService.getRandomMeals(50); // Get a large batch of defaults
+          // Modo Descubrimiento: True Infinite Scroll usando random.php
+          const data = await MealDBService.getTrulyRandomMeals(ITEMS_PER_PAGE);
+          setDisplayedRecipes(data);
+          setAllRecipes([]); // No aplica a descubrimiento
+          setHasMore(true);
         } else {
+          // Modo Búsqueda: Paginación local de un set fijo
+          let data: MealPreview[] = [];
           switch (type) {
             case "category":
               data = await MealDBService.filterByCategory(query);
@@ -47,12 +52,12 @@ export default function Home() {
               data = await MealDBService.searchMeals(query);
               break;
           }
+          
+          const validData = data || [];
+          setAllRecipes(validData);
+          setDisplayedRecipes(validData.slice(0, ITEMS_PER_PAGE));
+          setHasMore(validData.length > ITEMS_PER_PAGE);
         }
-        
-        const validData = data || [];
-        setAllRecipes(validData);
-        setDisplayedRecipes(validData.slice(0, ITEMS_PER_PAGE));
-        setHasMore(validData.length > ITEMS_PER_PAGE);
       } catch (error) {
         console.error("Error fetching recipes:", error);
         setAllRecipes([]);
@@ -68,38 +73,64 @@ export default function Home() {
   const observer = React.useRef<IntersectionObserver | null>(null);
   const lastElementRef = React.useCallback(
     (node: HTMLDivElement) => {
-      if (loading) return;
+      if (loading || loadingMore) return;
       if (observer.current) observer.current.disconnect();
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && hasMore) {
           setPage((prevPage) => prevPage + 1);
         }
+      }, {
+        rootMargin: "800px" // Dispara la carga 800px antes de llegar al final
       });
       if (node) observer.current.observe(node);
     },
-    [loading, hasMore]
+    [loading, loadingMore, hasMore]
   );
 
   // Escuchar cambios de página para cargar más
   useEffect(() => {
     if (page > 1) {
-      const startIndex = (page - 1) * ITEMS_PER_PAGE;
-      const endIndex = startIndex + ITEMS_PER_PAGE;
-      const newItems = allRecipes.slice(startIndex, endIndex);
+      const loadMore = async () => {
+        setLoadingMore(true);
+        try {
+          if (!query) {
+            // Modo descubrimiento: Fetch real a la red
+            const newItems = await MealDBService.getTrulyRandomMeals(ITEMS_PER_PAGE);
+            if (newItems.length > 0) {
+              setDisplayedRecipes((prev) => {
+                const existingIds = new Set(prev.map((r) => r.idMeal));
+                const uniqueItems = newItems.filter((i) => !existingIds.has(i.idMeal));
+                return [...prev, ...uniqueItems];
+              });
+              setHasMore(true); // Siempre true en descubrimiento
+            } else {
+              setHasMore(false);
+            }
+          } else {
+            // Modo búsqueda: Paginación local
+            const startIndex = (page - 1) * ITEMS_PER_PAGE;
+            const endIndex = startIndex + ITEMS_PER_PAGE;
+            const newItems = allRecipes.slice(startIndex, endIndex);
+            
+            if (newItems.length > 0) {
+              setDisplayedRecipes((prev) => {
+                const existingIds = new Set(prev.map((r) => r.idMeal));
+                const uniqueItems = newItems.filter((i) => !existingIds.has(i.idMeal));
+                return [...prev, ...uniqueItems];
+              });
+              setHasMore(endIndex < allRecipes.length);
+            } else {
+              setHasMore(false);
+            }
+          }
+        } finally {
+          setLoadingMore(false);
+        }
+      };
       
-      if (newItems.length > 0) {
-        setDisplayedRecipes((prev) => {
-          // Filtrar duplicados por react strict mode
-          const existingIds = new Set(prev.map((r) => r.idMeal));
-          const uniqueItems = newItems.filter((i) => !existingIds.has(i.idMeal));
-          return [...prev, ...uniqueItems];
-        });
-        setHasMore(endIndex < allRecipes.length);
-      } else {
-        setHasMore(false);
-      }
+      loadMore();
     }
-  }, [page, allRecipes]);
+  }, [page, query, allRecipes]);
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col gap-6">

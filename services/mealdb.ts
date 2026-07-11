@@ -59,12 +59,23 @@ export const MealDBService = {
   },
 
   /**
-   * Obtiene recetas aleatorias para poblar la pantalla de inicio
+   * Obtiene recetas aleatorias reales consultando random.php en paralelo
    */
-  async getRandomMeals(count: number = 6): Promise<MealPreview[]> {
-    // TheMealDB solo tiene endpoint para 1 random meal, o podemos buscar "a", "b", "c" al azar
-    // Para simplificar, buscaremos una lista inicial vacía que devuelve recetas por defecto.
-    const meals = await this.searchMeals("");
-    return meals.slice(0, count);
+  async getTrulyRandomMeals(count: number = 12): Promise<MealPreview[]> {
+    const promises = Array.from({ length: count }).map(() =>
+      fetch(`${MEALDB_BASE_URL}/random.php`).then((r) => r.json())
+    );
+    const results = await Promise.all(promises);
+    return results
+      .map((res) => {
+        const meal = res.meals?.[0];
+        if (!meal) return null;
+        return {
+          idMeal: meal.idMeal,
+          strMeal: meal.strMeal,
+          strMealThumb: meal.strMealThumb,
+        };
+      })
+      .filter(Boolean) as MealPreview[];
   }
 };
