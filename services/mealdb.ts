@@ -55,9 +55,17 @@ export const MealDBService = {
    * Filtra recetas por región/área (ej: Italian, Mexican)
    */
   async filterByArea(area: string): Promise<MealPreview[]> {
-    const res = await fetch(`${MEALDB_BASE_URL}/filter.php?a=${area}`);
+    // Algunas áreas en TheMealDB list.php difieren de filter.php (ej. Argentine vs Argentina)
+    const apiAreaMap: Record<string, string> = {
+      "Argentine": "Argentina",
+      "Motswana": "Botswana",
+    };
+    const queryArea = apiAreaMap[area] || area;
+
+    const res = await fetch(`${MEALDB_BASE_URL}/filter.php?a=${queryArea}`);
     if (!res.ok) throw new Error("Error fetching meals by area");
     const data: MealDBResponse<MealPreview> = await res.json();
+    
     // Agregamos manualmente el área ya que TheMealDB no la devuelve en filter.php
     return (data.meals || []).map(m => ({ ...m, strArea: area }));
   },
