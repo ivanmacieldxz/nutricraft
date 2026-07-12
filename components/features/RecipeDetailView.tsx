@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { MealDetail } from "@/services/mealdb";
 import { TranslatedRecipeDetail } from "@/app/actions/translations";
-import { NutritionData } from "@/services/edamam";
+import { NutritionData } from "@/services/nutrition";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -153,20 +153,12 @@ export function RecipeDetailView({ meal, translatedData, nutritionData }: Recipe
             <CardContent className="p-6 space-y-6">
               {!nutritionData ? (
                 <div className="text-center space-y-2">
-                  <p className="text-sm text-muted-foreground">Configura Edamam API para ver valores reales</p>
+                  <p className="text-sm text-muted-foreground">Configura CalorieNinjas API para ver valores reales</p>
                   <Badge variant="outline" className="animate-pulse">Pendiente de Integración</Badge>
                 </div>
               ) : (
                 <div className="text-center space-y-1">
                   <p className="text-sm text-muted-foreground">Valores estimados totales</p>
-                  <div className="flex flex-wrap gap-2 justify-center mt-2">
-                    {nutritionData.dietLabels?.map(label => (
-                      <Badge key={label} variant="secondary" className="bg-green-500/10 text-green-600 dark:text-green-400 border-transparent">{label}</Badge>
-                    ))}
-                    {nutritionData.healthLabels?.slice(0, 3).map(label => (
-                      <Badge key={label} variant="outline">{label}</Badge>
-                    ))}
-                  </div>
                 </div>
               )}
               
@@ -179,19 +171,19 @@ export function RecipeDetailView({ meal, translatedData, nutritionData }: Recipe
                 <div className="space-y-1 bg-background/50 p-3 rounded-xl text-center">
                   <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Proteínas</p>
                   <p className="text-2xl font-bold">
-                    {nutritionData?.totalNutrients?.PROCNT ? `${Math.round(nutritionData.totalNutrients.PROCNT.quantity)}${nutritionData.totalNutrients.PROCNT.unit}` : "--"}
+                    {nutritionData ? `${Math.round(nutritionData.totalProtein)}g` : "--"}
                   </p>
                 </div>
                 <div className="space-y-1 bg-background/50 p-3 rounded-xl text-center">
                   <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Carbs</p>
                   <p className="text-2xl font-bold">
-                    {nutritionData?.totalNutrients?.CHOCDF ? `${Math.round(nutritionData.totalNutrients.CHOCDF.quantity)}${nutritionData.totalNutrients.CHOCDF.unit}` : "--"}
+                    {nutritionData ? `${Math.round(nutritionData.totalCarbs)}g` : "--"}
                   </p>
                 </div>
                 <div className="space-y-1 bg-background/50 p-3 rounded-xl text-center">
                   <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Grasas</p>
                   <p className="text-2xl font-bold">
-                    {nutritionData?.totalNutrients?.FAT ? `${Math.round(nutritionData.totalNutrients.FAT.quantity)}${nutritionData.totalNutrients.FAT.unit}` : "--"}
+                    {nutritionData ? `${Math.round(nutritionData.totalFat)}g` : "--"}
                   </p>
                 </div>
               </div>
