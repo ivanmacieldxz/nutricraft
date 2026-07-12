@@ -10,18 +10,7 @@ import { Suspense } from "react";
 
 const ITEMS_PER_PAGE = 12;
 
-// Caché global para mantener el estado de la grilla si el componente se desmonta 
-// (ej. al navegar a una receta y volver, o si Suspense lo recarga).
-const HOME_CACHE = {
-  allRecipes: [] as MealPreview[],
-  displayedRecipes: [] as MealPreview[],
-  page: 1,
-  hasMore: false,
-  query: "",
-  type: "",
-  filterValue: "",
-  isCached: false,
-};
+
 
 function HomeContent() {
   const searchParams = useSearchParams();
@@ -29,32 +18,25 @@ function HomeContent() {
   const type = searchParams.get("type") || "";
   const filterValue = searchParams.get("filterValue") || "";
 
-  const isSameQuery = 
-    HOME_CACHE.isCached && 
-    HOME_CACHE.query === query && 
-    HOME_CACHE.type === type && 
-    HOME_CACHE.filterValue === filterValue;
-
-  const [allRecipes, setAllRecipes] = useState<MealPreview[]>(isSameQuery ? HOME_CACHE.allRecipes : []);
-  const [displayedRecipes, setDisplayedRecipes] = useState<MealPreview[]>(isSameQuery ? HOME_CACHE.displayedRecipes : []);
-  const [loading, setLoading] = useState(isSameQuery ? false : true);
+  const [allRecipes, setAllRecipes] = useState<MealPreview[]>([]);
+  const [displayedRecipes, setDisplayedRecipes] = useState<MealPreview[]>([]);
+  const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(isSameQuery ? HOME_CACHE.page : 1);
-  const [hasMore, setHasMore] = useState(isSameQuery ? HOME_CACHE.hasMore : false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+
+  // Usamos una ref para asegurarnos de que loadMore solo actúe sobre los datos de la búsqueda actual
+  const currentQuerySig = React.useRef("");
+  const sig = `${query}|${type}|${filterValue}`;
 
   // Fetch initial results when search params change
   useEffect(() => {
+    let isSubscribed = true;
+
     const fetchRecipes = async () => {
-      // Si tenemos los mismos parámetros cacheados, no volver a fetchear la primera página
-      if (HOME_CACHE.isCached && 
-          HOME_CACHE.query === query && 
-          HOME_CACHE.type === type && 
-          HOME_CACHE.filterValue === filterValue) {
-        return;
-      }
-      
       setLoading(true);
       setPage(1);
+      
       try {
         let data: MealPreview[] = [];
         let hasMoreData = false;
@@ -62,6 +44,7 @@ function HomeContent() {
         if (!query && !type) {
           // Modo Descubrimiento Puro
           data = await MealDBService.getTrulyRandomMeals(ITEMS_PER_PAGE);
+          if (!isSubscribed) return;
           setAllRecipes([]); 
           setDisplayedRecipes(data);
           setHasMore(true);
@@ -88,36 +71,33 @@ function HomeContent() {
             data = await MealDBService.searchMeals(query);
           }
           
+          if (!isSubscribed) return;
           const validData = data || [];
           setAllRecipes(validData);
           const displayed = validData.slice(0, ITEMS_PER_PAGE);
           setDisplayedRecipes(displayed);
           hasMoreData = validData.length > ITEMS_PER_PAGE;
           setHasMore(hasMoreData);
-          data = displayed; // for cache
         }
 
-        // Actualizar caché exitosamente
-        HOME_CACHE.allRecipes = !query && !type ? [] : (data || []);
-        HOME_CACHE.displayedRecipes = data;
-        HOME_CACHE.page = 1;
-        HOME_CACHE.hasMore = hasMoreData;
-        HOME_CACHE.query = query;
-        HOME_CACHE.type = type;
-        HOME_CACHE.filterValue = filterValue;
-        if (data.length > 0) HOME_CACHE.isCached = true;
+        currentQuerySig.current = sig;
 
       } catch (error) {
+        if (!isSubscribed) return;
         console.error("Error fetching recipes:", error);
         setAllRecipes([]);
         setDisplayedRecipes([]);
       } finally {
-        setLoading(false);
+        if (isSubscribed) setLoading(false);
       }
     };
 
     fetchRecipes();
-  }, [query, type, filterValue]);
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [query, type, filterValue, sig]);
 
   const observer = React.useRef<IntersectionObserver | null>(null);
   const lastElementRef = React.useCallback(
@@ -138,62 +118,61 @@ function HomeContent() {
 
   // Escuchar cambios de página para cargar más
   useEffect(() => {
-    if (page > 1) {
+    let isSubscribed = true;
+    
+    // Prevenir carga si los datos actuales no corresponden a los parámetros de la URL
+    if (page > 1 && currentQuerySig.current === sig) {
       const loadMore = async () => {
         setLoadingMore(true);
         try {
           if (!query && !type) {
             const newItems = await MealDBService.getTrulyRandomMeals(ITEMS_PER_PAGE);
+            if (!isSubscribed) return;
             if (newItems.length > 0) {
               setDisplayedRecipes((prev) => {
                 const existingIds = new Set(prev.map((r) => r.idMeal));
                 const uniqueItems = newItems.filter((i) => !existingIds.has(i.idMeal));
                 if (uniqueItems.length > 0) {
                   setHasMore(true);
-                  const newDisplayed = [...prev, ...uniqueItems];
-                  HOME_CACHE.displayedRecipes = newDisplayed;
-                  HOME_CACHE.page = page;
-                  return newDisplayed;
+                  return [...prev, ...uniqueItems];
                 } else {
                   setHasMore(false);
-                  HOME_CACHE.hasMore = false;
                   return prev;
                 }
               });
             } else {
               setHasMore(false);
-              HOME_CACHE.hasMore = false;
             }
           } else {
             const startIndex = (page - 1) * ITEMS_PER_PAGE;
             const endIndex = startIndex + ITEMS_PER_PAGE;
             const newItems = allRecipes.slice(startIndex, endIndex);
             
+            if (!isSubscribed) return;
             if (newItems.length > 0) {
               setDisplayedRecipes((prev) => {
                 const existingIds = new Set(prev.map((r) => r.idMeal));
                 const uniqueItems = newItems.filter((i) => !existingIds.has(i.idMeal));
-                const newDisplayed = [...prev, ...uniqueItems];
-                HOME_CACHE.displayedRecipes = newDisplayed;
-                HOME_CACHE.page = page;
-                return newDisplayed;
+                return [...prev, ...uniqueItems];
               });
               const stillHasMore = endIndex < allRecipes.length;
               setHasMore(stillHasMore);
-              HOME_CACHE.hasMore = stillHasMore;
             } else {
               setHasMore(false);
-              HOME_CACHE.hasMore = false;
             }
           }
         } finally {
-          setLoadingMore(false);
+          if (isSubscribed) setLoadingMore(false);
         }
       };
       
       loadMore();
     }
-  }, [page, query, type, allRecipes]);
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [page, query, type, filterValue, allRecipes, sig]);
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col gap-6">
