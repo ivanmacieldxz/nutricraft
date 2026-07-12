@@ -5,6 +5,8 @@ export interface MealPreview {
   strMeal: string;
   strMealThumb: string;
   strArea?: string;
+  strCategory?: string;
+  notRespectsDiet?: string;
 }
 
 export interface MealDBResponse<T> {
@@ -140,6 +142,7 @@ export const MealDBService = {
           strMeal: meal.strMeal,
           strMealThumb: meal.strMealThumb,
           strArea: meal.strArea,
+          strCategory: meal.strCategory,
         };
       })
       .filter(Boolean) as MealPreview[];

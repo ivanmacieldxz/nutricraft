@@ -156,21 +156,39 @@ function HomeContent() {
           if (!query && !type) {
             const prefs = await getUserPreferences();
             if (prefs && prefs.diets && prefs.diets.length > 0) {
+              const preferredDiet = prefs.diets[0];
               const startIndex = (page - 1) * ITEMS_PER_PAGE;
               const endIndex = startIndex + ITEMS_PER_PAGE;
-              const newItems = allRecipes.slice(startIndex, endIndex);
               
-              if (!isSubscribed) return;
-              if (newItems.length > 0) {
+              if (startIndex < allRecipes.length) {
+                const newItems = allRecipes.slice(startIndex, endIndex);
+                if (!isSubscribed) return;
                 setDisplayedRecipes((prev) => {
                   const existingIds = new Set(prev.map((r) => r.idMeal));
                   const uniqueItems = newItems.filter((i) => !existingIds.has(i.idMeal));
                   return [...prev, ...uniqueItems];
                 });
-                const stillHasMore = endIndex < allRecipes.length;
-                setHasMore(stillHasMore);
+                setHasMore(true);
               } else {
-                setHasMore(false);
+                // Out of preferred recipes, fetch random
+                const newItems = await MealDBService.getTrulyRandomMeals(ITEMS_PER_PAGE);
+                if (!isSubscribed) return;
+                
+                // Tag them if they don't respect the diet
+                const taggedItems = newItems.map(item => {
+                  if (item.strCategory !== preferredDiet) {
+                    const labelName = preferredDiet === "Vegetarian" ? "Vegetariano" : "Vegano";
+                    return { ...item, notRespectsDiet: `✕ ${labelName}` };
+                  }
+                  return item;
+                });
+                
+                setDisplayedRecipes((prev) => {
+                  const existingIds = new Set(prev.map((r) => r.idMeal));
+                  const uniqueItems = taggedItems.filter((i) => !existingIds.has(i.idMeal));
+                  return [...prev, ...uniqueItems];
+                });
+                setHasMore(true);
               }
             } else {
               const newItems = await MealDBService.getTrulyRandomMeals(ITEMS_PER_PAGE);

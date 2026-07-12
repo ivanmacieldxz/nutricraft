@@ -27,6 +27,13 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         className="object-cover transition-transform duration-500 group-hover:scale-105"
         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
       />
+      {recipe.notRespectsDiet && (
+        <div className="absolute top-3 left-3 z-10">
+          <span className="bg-destructive/90 text-destructive-foreground backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold shadow-lg border border-destructive/50 flex items-center">
+            {recipe.notRespectsDiet}
+          </span>
+        </div>
+      )}
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-80 transition-opacity group-hover:opacity-100"></div>
 
