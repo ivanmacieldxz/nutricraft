@@ -51,8 +51,8 @@ function HomeContent() {
             setAllRecipes(data);
             const displayed = data.slice(0, ITEMS_PER_PAGE);
             setDisplayedRecipes(displayed);
-            hasMoreData = data.length > ITEMS_PER_PAGE;
-            setHasMore(hasMoreData);
+            hasMoreData = true; // Siempre hay más porque hacemos fallback a recetas aleatorias
+            setHasMore(true);
           } else {
             // Modo Descubrimiento Puro
             data = await MealDBService.getTrulyRandomMeals(ITEMS_PER_PAGE);
@@ -176,7 +176,13 @@ function HomeContent() {
                 
                 // Tag them if they don't respect the diet
                 const taggedItems = newItems.map(item => {
-                  if (item.strCategory !== preferredDiet) {
+                  const cat = item.strCategory?.toLowerCase() || "";
+                  const pref = preferredDiet.toLowerCase();
+                  
+                  // Una receta Vegana respeta la dieta Vegetariana
+                  const isCompatible = cat === pref || (pref === "vegetarian" && cat === "vegan");
+                  
+                  if (!isCompatible) {
                     const labelName = preferredDiet === "Vegetarian" ? "Vegetariano" : "Vegano";
                     return { ...item, notRespectsDiet: `✕ ${labelName}` };
                   }
