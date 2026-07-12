@@ -35,3 +35,49 @@ export async function getTranslatedIngredients(): Promise<TranslatedItem[]> {
   ingredientsCache = await translateArray(list);
   return ingredientsCache;
 }
+
+export type TranslatedRecipeDetail = {
+  title: string;
+  category: string;
+  area: string;
+  instructions: string;
+  ingredients: string[]; // Combina medida + ingrediente traducido
+};
+
+import { MealDetail } from "@/services/mealdb";
+
+export async function getTranslatedRecipe(meal: MealDetail): Promise<TranslatedRecipeDetail> {
+  const areaEs = meal.strArea ? (areaToCountryEs[meal.strArea] || meal.strArea) : "";
+  
+  // Combina measure + name
+  const fullIngredients = meal.ingredients.map(i => 
+    i.measure ? `${i.measure} ${i.name}`.trim() : i.name
+  );
+  
+  // Reemplazamos los saltos de línea por espacios en las instrucciones 
+  // para que no rompan el formato de \n de translateArray.
+  const cleanInstructions = meal.strInstructions.replace(/\r?\n|\r/g, ' ');
+
+  // Los textos a traducir
+  const textsToTranslate = [
+    meal.strMeal,
+    meal.strCategory,
+    cleanInstructions,
+    ...fullIngredients
+  ];
+  
+  const translations = await translateArray(textsToTranslate, false);
+  
+  const titleEs = translations[0]?.es || meal.strMeal;
+  const categoryEs = translations[1]?.es || meal.strCategory;
+  const instructionsEs = translations[2]?.es || meal.strInstructions;
+  const ingredientsEs = translations.slice(3).map(t => t.es);
+  
+  return {
+    title: titleEs,
+    category: categoryEs,
+    area: areaEs,
+    instructions: instructionsEs,
+    ingredients: ingredientsEs
+  };
+}

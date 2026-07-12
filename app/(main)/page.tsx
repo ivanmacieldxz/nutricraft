@@ -6,24 +6,67 @@ import { useSearchParams } from "next/navigation";
 import { MealDBService, MealPreview } from "@/services/mealdb";
 import { RecipeCard } from "@/components/features/RecipeCard";
 
+import { Suspense } from "react";
+
 const ITEMS_PER_PAGE = 12;
 
-export default function Home() {
+// Caché global para mantener el estado de la grilla si el componente se desmonta 
+// (ej. al navegar a una receta y volver, o si Suspense lo recarga).
+const HOME_CACHE = {
+  allRecipes: [] as MealPreview[],
+  displayedRecipes: [] as MealPreview[],
+  page: 1,
+  hasMore: false,
+  query: "",
+  type: "",
+  filterValue: "",
+  isCached: false,
+};
+
+function HomeContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
   const type = searchParams.get("type") || "";
   const filterValue = searchParams.get("filterValue") || "";
 
-  const [allRecipes, setAllRecipes] = useState<MealPreview[]>([]);
-  const [displayedRecipes, setDisplayedRecipes] = useState<MealPreview[]>([]);
-  const [loading, setLoading] = useState(true);
+  const isSameQuery = 
+    HOME_CACHE.isCached && 
+    HOME_CACHE.query === query && 
+    HOME_CACHE.type === type && 
+    HOME_CACHE.filterValue === filterValue;
+
+  const [allRecipes, setAllRecipes] = useState<MealPreview[]>(isSameQuery ? HOME_CACHE.allRecipes : []);
+  const [displayedRecipes, setDisplayedRecipes] = useState<MealPreview[]>(isSameQuery ? HOME_CACHE.displayedRecipes : []);
+  const [loading, setLoading] = useState(isSameQuery ? false : true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
+  const [page, setPage] = useState(isSameQuery ? HOME_CACHE.page : 1);
+  const [hasMore, setHasMore] = useState(isSameQuery ? HOME_CACHE.hasMore : false);
+
+  // Sincronizar estado con la caché
+  useEffect(() => {
+    HOME_CACHE.allRecipes = allRecipes;
+    HOME_CACHE.displayedRecipes = displayedRecipes;
+    HOME_CACHE.page = page;
+    HOME_CACHE.hasMore = hasMore;
+    HOME_CACHE.query = query;
+    HOME_CACHE.type = type;
+    HOME_CACHE.filterValue = filterValue;
+    if (displayedRecipes.length > 0) {
+      HOME_CACHE.isCached = true;
+    }
+  }, [allRecipes, displayedRecipes, page, hasMore, query, type, filterValue]);
 
   // Fetch initial results when search params change
   useEffect(() => {
     const fetchRecipes = async () => {
+      // Si tenemos los mismos parámetros cacheados, no volver a fetchear la primera página
+      if (HOME_CACHE.isCached && 
+          HOME_CACHE.query === query && 
+          HOME_CACHE.type === type && 
+          HOME_CACHE.filterValue === filterValue) {
+        return;
+      }
+      
       setLoading(true);
       setPage(1);
       try {
@@ -107,9 +150,15 @@ export default function Home() {
               setDisplayedRecipes((prev) => {
                 const existingIds = new Set(prev.map((r) => r.idMeal));
                 const uniqueItems = newItems.filter((i) => !existingIds.has(i.idMeal));
-                return [...prev, ...uniqueItems];
+                
+                if (uniqueItems.length > 0) {
+                  setHasMore(true);
+                  return [...prev, ...uniqueItems];
+                } else {
+                  setHasMore(false);
+                  return prev;
+                }
               });
-              setHasMore(true); // Siempre true en descubrimiento
             } else {
               setHasMore(false);
             }
@@ -192,5 +241,17 @@ export default function Home() {
         </>
       )}
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center py-32 w-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }

@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { Refrigerator, Home, Calendar, Bookmark, Settings, Menu } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SearchFilterBar } from "@/components/features/SearchFilterBar";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   Sheet,
   SheetContent,
@@ -38,15 +40,27 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </Link>
 
         <div className="px-6 pb-6">
-          <SearchFilterBar />
+          <Suspense fallback={<div className="h-11 w-full bg-muted animate-pulse rounded-xl" />}>
+            <SearchFilterBar />
+          </Suspense>
         </div>
 
         <nav className="flex-1 px-4 flex flex-col gap-1 overflow-y-auto">
           {navLinks.map((link) => {
             const Icon = link.icon;
             const isActive = pathname === link.href;
+            const isProtected = link.href !== "/";
             return (
-              <Link key={link.href} href={link.href}>
+              <Link 
+                key={link.href} 
+                href={link.href}
+                onClick={(e) => {
+                  if (isProtected && !isSignedIn) {
+                    e.preventDefault();
+                    toast.error(`Debes iniciar sesión para acceder a ${link.name}`);
+                  }
+                }}
+              >
                 <span className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"}`}>
                   <Icon className="w-5 h-5" />
                   {link.name}
@@ -94,8 +108,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   {navLinks.map((link) => {
                     const Icon = link.icon;
                     const isActive = pathname === link.href;
+                    const isProtected = link.href !== "/";
                     return (
-                      <Link key={link.href} href={link.href}>
+                      <Link 
+                        key={link.href} 
+                        href={link.href}
+                        onClick={(e) => {
+                          if (isProtected && !isSignedIn) {
+                            e.preventDefault();
+                            toast.error(`Debes iniciar sesión para acceder a ${link.name}`);
+                          }
+                        }}
+                      >
                         <span className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"}`}>
                           <Icon className="w-5 h-5" />
                           {link.name}
@@ -129,7 +153,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* Mobile Search/Filter sub-bar */}
         <div className="bg-background/80 backdrop-blur-md border-b p-4 shadow-sm">
-          <SearchFilterBar />
+          <Suspense fallback={<div className="h-11 w-full bg-muted animate-pulse rounded-xl" />}>
+            <SearchFilterBar />
+          </Suspense>
         </div>
       </div>
 

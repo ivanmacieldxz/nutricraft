@@ -26,6 +26,7 @@ export const metadata: Metadata = {
 import { ClerkProvider } from '@clerk/nextjs';
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function RootLayout({
   children,
@@ -49,6 +50,7 @@ export default function RootLayout({
             <TooltipProvider>
               {children}
             </TooltipProvider>
+            <Toaster position="bottom-center" />
           </ThemeProvider>
         </body>
       </html>
