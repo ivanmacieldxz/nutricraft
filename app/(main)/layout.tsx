@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { Refrigerator, Home, Calendar, Bookmark, Settings, Menu } from "lucide-react";
 
@@ -38,7 +39,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </Link>
 
         <div className="px-6 pb-6">
-          <SearchFilterBar />
+          <Suspense fallback={<div className="h-11 w-full bg-muted animate-pulse rounded-xl" />}>
+            <SearchFilterBar />
+          </Suspense>
         </div>
 
         <nav className="flex-1 px-4 flex flex-col gap-1 overflow-y-auto">
@@ -129,7 +132,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* Mobile Search/Filter sub-bar */}
         <div className="bg-background/80 backdrop-blur-md border-b p-4 shadow-sm">
-          <SearchFilterBar />
+          <Suspense fallback={<div className="h-11 w-full bg-muted animate-pulse rounded-xl" />}>
+            <SearchFilterBar />
+          </Suspense>
         </div>
       </div>
 

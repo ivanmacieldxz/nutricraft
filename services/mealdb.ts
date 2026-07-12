@@ -11,7 +11,60 @@ export interface MealDBResponse<T> {
   meals: T[] | null;
 }
 
+export interface RecipeIngredient {
+  name: string;
+  measure: string;
+}
+
+export interface MealDetail extends MealPreview {
+  strCategory: string;
+  strInstructions: string;
+  ingredients: RecipeIngredient[];
+  strYoutube?: string;
+  strTags?: string;
+}
+
 export const MealDBService = {
+  /**
+   * Obtiene los detalles completos de una receta por su ID
+   */
+  async getMealById(id: string): Promise<MealDetail | null> {
+    const res = await fetch(`${MEALDB_BASE_URL}/lookup.php?i=${id}`);
+    if (!res.ok) throw new Error("Error fetching meal details");
+    const data = await res.json();
+    
+    if (!data.meals || !data.meals[0]) return null;
+    
+    const meal = data.meals[0];
+    
+    // Extraer y limpiar ingredientes y medidas
+    const ingredients: RecipeIngredient[] = [];
+    for (let i = 1; i <= 20; i++) {
+      const name = meal[`strIngredient${i}`];
+      const measure = meal[`strMeasure${i}`];
+      
+      // TheMealDB a veces retorna strings vacíos, espacios en blanco o null
+      if (name && name.trim() !== "") {
+        ingredients.push({
+          name: name.trim(),
+          measure: measure ? measure.trim() : ""
+        });
+      }
+    }
+    
+    return {
+      idMeal: meal.idMeal,
+      strMeal: meal.strMeal,
+      strMealThumb: meal.strMealThumb,
+      strArea: meal.strArea,
+      strCategory: meal.strCategory,
+      strInstructions: meal.strInstructions,
+      strYoutube: meal.strYoutube,
+      strTags: meal.strTags,
+      ingredients
+    };
+  },
+
   /**
    * Busca recetas por nombre. Si no se pasa query, puede devolver lista default.
    */

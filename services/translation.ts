@@ -3,7 +3,7 @@ export interface TranslatedItem {
   es: string;
 }
 
-export async function translateArray(texts: string[]): Promise<TranslatedItem[]> {
+export async function translateArray(texts: string[], formatAsList: boolean = true): Promise<TranslatedItem[]> {
   if (texts.length === 0) return [];
   
   // Google Translate API maneja mejor lotes de hasta 100 elementos por payload
@@ -59,6 +59,11 @@ export async function translateArray(texts: string[]): Promise<TranslatedItem[]>
       // Fallback
       chunk.forEach(t => results.push({ en: t, es: t }));
     }
+  }
+  
+  // Si no queremos formato de lista, devolvemos tal cual respetando el orden original y sin deduplicar
+  if (!formatAsList) {
+    return results;
   }
   
   // Función helper para capitalizar (Title Case)
