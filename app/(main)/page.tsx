@@ -11,7 +11,8 @@ const ITEMS_PER_PAGE = 12;
 export default function Home() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
-  const type = searchParams.get("type") || "name";
+  const type = searchParams.get("type") || "";
+  const filterValue = searchParams.get("filterValue") || "";
 
   const [allRecipes, setAllRecipes] = useState<MealPreview[]>([]);
   const [displayedRecipes, setDisplayedRecipes] = useState<MealPreview[]>([]);
@@ -20,37 +21,43 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
 
-  // Eliminado useInView
-
   // Fetch initial results when search params change
   useEffect(() => {
     const fetchRecipes = async () => {
       setLoading(true);
       setPage(1);
       try {
-        if (!query) {
-          // Modo Descubrimiento: True Infinite Scroll usando random.php
+        if (!query && !type) {
+          // Modo Descubrimiento Puro
           const data = await MealDBService.getTrulyRandomMeals(ITEMS_PER_PAGE);
           setDisplayedRecipes(data);
-          setAllRecipes([]); // No aplica a descubrimiento
+          setAllRecipes([]); 
           setHasMore(true);
         } else {
-          // Modo Búsqueda: Paginación local de un set fijo
+          // Modo Búsqueda y/o Filtro
           let data: MealPreview[] = [];
-          switch (type) {
-            case "category":
-              data = await MealDBService.filterByCategory(query);
-              break;
-            case "ingredient":
-              data = await MealDBService.filterByIngredient(query);
-              break;
-            case "region":
-              data = await MealDBService.filterByArea(query);
-              break;
-            case "name":
-            default:
-              data = await MealDBService.searchMeals(query);
-              break;
+          
+          if (type && filterValue) {
+            // Se usa el filtro estricto a la API (Categoría, Ingrediente, Región)
+            switch (type) {
+              case "category":
+                data = await MealDBService.filterByCategory(filterValue);
+                break;
+              case "ingredient":
+                data = await MealDBService.filterByIngredient(filterValue);
+                break;
+              case "region":
+                data = await MealDBService.filterByArea(filterValue);
+                break;
+            }
+            // Filtrado local cruzado si también hay un término de búsqueda (query)
+            if (query) {
+              const lowerQ = query.toLowerCase();
+              data = (data || []).filter(r => r.strMeal.toLowerCase().includes(lowerQ));
+            }
+          } else if (query) {
+            // Solo búsqueda por nombre
+            data = await MealDBService.searchMeals(query);
           }
           
           const validData = data || [];
@@ -68,7 +75,7 @@ export default function Home() {
     };
 
     fetchRecipes();
-  }, [query, type]);
+  }, [query, type, filterValue]);
 
   const observer = React.useRef<IntersectionObserver | null>(null);
   const lastElementRef = React.useCallback(
@@ -93,7 +100,7 @@ export default function Home() {
       const loadMore = async () => {
         setLoadingMore(true);
         try {
-          if (!query) {
+          if (!query && !type) {
             // Modo descubrimiento: Fetch real a la red
             const newItems = await MealDBService.getTrulyRandomMeals(ITEMS_PER_PAGE);
             if (newItems.length > 0) {
@@ -107,7 +114,7 @@ export default function Home() {
               setHasMore(false);
             }
           } else {
-            // Modo búsqueda: Paginación local
+            // Modo búsqueda y/o filtro: Paginación local
             const startIndex = (page - 1) * ITEMS_PER_PAGE;
             const endIndex = startIndex + ITEMS_PER_PAGE;
             const newItems = allRecipes.slice(startIndex, endIndex);
@@ -130,7 +137,7 @@ export default function Home() {
       
       loadMore();
     }
-  }, [page, query, allRecipes]);
+  }, [page, query, type, allRecipes]);
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col gap-6">

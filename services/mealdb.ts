@@ -77,5 +77,38 @@ export const MealDBService = {
         };
       })
       .filter(Boolean) as MealPreview[];
+  },
+
+  /**
+   * Obtiene la lista de todas las categorías disponibles
+   */
+  async getCategoriesList(): Promise<string[]> {
+    const res = await fetch(`${MEALDB_BASE_URL}/list.php?c=list`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    const list = (data.meals || []).map((m: any) => (m.strCategory || "").trim()).filter(Boolean);
+    return Array.from(new Set(list)) as string[];
+  },
+
+  /**
+   * Obtiene la lista de todas las regiones/países disponibles
+   */
+  async getAreasList(): Promise<string[]> {
+    const res = await fetch(`${MEALDB_BASE_URL}/list.php?a=list`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    const list = (data.meals || []).map((m: any) => (m.strArea || "").trim()).filter(Boolean);
+    return Array.from(new Set(list)) as string[];
+  },
+
+  /**
+   * Obtiene la lista de todos los ingredientes principales
+   */
+  async getIngredientsList(): Promise<string[]> {
+    const res = await fetch(`${MEALDB_BASE_URL}/list.php?i=list`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    const list = (data.meals || []).map((m: any) => (m.strIngredient || "").trim()).filter(Boolean);
+    return Array.from(new Set(list)) as string[];
   }
 };
