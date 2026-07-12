@@ -73,6 +73,10 @@ function HomeContent() {
           
           if (!isSubscribed) return;
           const validData = data || [];
+          
+          // Ordenar alfabéticamente
+          validData.sort((a, b) => a.strMeal.localeCompare(b.strMeal));
+          
           setAllRecipes(validData);
           const displayed = validData.slice(0, ITEMS_PER_PAGE);
           setDisplayedRecipes(displayed);
