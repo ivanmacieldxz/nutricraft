@@ -54,11 +54,15 @@ export async function getTranslatedRecipe(meal: MealDetail): Promise<TranslatedR
     i.measure ? `${i.measure} ${i.name}`.trim() : i.name
   );
   
+  // Reemplazamos los saltos de línea por espacios en las instrucciones 
+  // para que no rompan el formato de \n de translateArray.
+  const cleanInstructions = meal.strInstructions.replace(/\r?\n|\r/g, ' ');
+
   // Los textos a traducir
   const textsToTranslate = [
     meal.strMeal,
     meal.strCategory,
-    meal.strInstructions,
+    cleanInstructions,
     ...fullIngredients
   ];
   

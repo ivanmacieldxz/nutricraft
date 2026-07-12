@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useUser } from "@clerk/nextjs";
+import { toast } from "sonner";
 import { MealDetail } from "@/services/mealdb";
 import { TranslatedRecipeDetail } from "@/app/actions/translations";
 import { NutritionData } from "@/services/nutrition";
@@ -20,7 +22,16 @@ interface RecipeDetailViewProps {
 }
 
 export function RecipeDetailView({ meal, translatedData, nutritionData }: RecipeDetailViewProps) {
+  const { isSignedIn } = useUser();
   const [checkedIngredients, setCheckedIngredients] = useState<Record<number, boolean>>({});
+
+  const handleProtectedAction = (action: string) => {
+    if (!isSignedIn) {
+      toast.error(`Debes iniciar sesión para ${action} recetas.`);
+      return;
+    }
+    toast.success(`¡Receta añadida! (Próximamente disponible)`);
+  };
 
   const toggleIngredient = (index: number) => {
     setCheckedIngredients(prev => ({
@@ -37,7 +48,7 @@ export function RecipeDetailView({ meal, translatedData, nutritionData }: Recipe
 
   return (
     <div className="animate-in fade-in duration-700 w-full max-w-6xl mx-auto p-4 md:p-8 space-y-8">
-      
+
       {/* Hero Section */}
       <div className="relative w-full h-[40vh] md:h-[50vh] rounded-[2rem] overflow-hidden shadow-2xl">
         <Image
@@ -50,12 +61,12 @@ export function RecipeDetailView({ meal, translatedData, nutritionData }: Recipe
         {/* Gradient overlays for readability */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent"></div>
-        
+
         {/* Hero Content */}
         <div className="absolute bottom-0 left-0 p-6 md:p-12 w-full flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-4 max-w-3xl">
             <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary" className="bg-primary/20 text-primary-foreground backdrop-blur-md border-transparent hover:bg-primary/30">
+              <Badge variant="secondary" className="bg-primary text-primary-foreground backdrop-blur-md border-transparent hover:bg-primary/30">
                 <ChefHat className="w-3 h-3 mr-1" />
                 {translatedData.category}
               </Badge>
@@ -69,13 +80,22 @@ export function RecipeDetailView({ meal, translatedData, nutritionData }: Recipe
               {translatedData.title}
             </h1>
           </div>
-          
+
           <div className="flex items-center gap-3">
-            <Button variant="secondary" size="lg" className="rounded-full shadow-lg hover:scale-105 transition-transform backdrop-blur-md bg-white/10 text-white border border-white/20 hover:bg-white/20">
+            <Button 
+              variant="secondary" 
+              size="lg" 
+              onClick={() => handleProtectedAction("guardar")}
+              className="rounded-full shadow-lg hover:scale-105 transition-transform backdrop-blur-md bg-white/10 text-white border border-white/20 hover:bg-white/20"
+            >
               <Bookmark className="w-5 h-5 mr-2" />
               Guardar
             </Button>
-            <Button size="lg" className="rounded-full shadow-lg hover:scale-105 transition-transform">
+            <Button 
+              size="lg" 
+              onClick={() => handleProtectedAction("planificar")}
+              className="rounded-full shadow-lg hover:scale-105 transition-transform"
+            >
               <CalendarPlus className="w-5 h-5 mr-2" />
               Planificar
             </Button>
@@ -85,10 +105,10 @@ export function RecipeDetailView({ meal, translatedData, nutritionData }: Recipe
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* Left Column: Ingredients and Instructions */}
         <div className="lg:col-span-2 space-y-10">
-          
+
           {/* Ingredients Section */}
           <section className="bg-card/40 backdrop-blur-xl border border-border/50 rounded-3xl p-6 md:p-8 shadow-sm">
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
@@ -97,17 +117,17 @@ export function RecipeDetailView({ meal, translatedData, nutritionData }: Recipe
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {translatedData.ingredients.map((ingredient, idx) => (
-                <label 
+                <label
                   key={idx}
                   className={cn(
                     "flex items-center space-x-3 p-3 rounded-xl transition-all cursor-pointer border",
-                    checkedIngredients[idx] 
-                      ? "bg-primary/10 border-primary/30 opacity-70" 
+                    checkedIngredients[idx]
+                      ? "bg-primary/10 border-primary/30 opacity-70"
                       : "bg-background/50 border-transparent hover:bg-secondary hover:border-border/50"
                   )}
                 >
-                  <Checkbox 
-                    checked={!!checkedIngredients[idx]} 
+                  <Checkbox
+                    checked={!!checkedIngredients[idx]}
                     onCheckedChange={() => toggleIngredient(idx)}
                     className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                   />
@@ -145,8 +165,8 @@ export function RecipeDetailView({ meal, translatedData, nutritionData }: Recipe
         </div>
 
         {/* Right Column: Nutrition & Sidebar */}
-        <div className="space-y-6">
-          <Card className="rounded-3xl border-border/50 shadow-sm bg-card/40 backdrop-blur-xl overflow-hidden sticky top-24">
+        <div className="space-y-6 lg:sticky lg:top-24 self-start">
+          <Card className="rounded-3xl border-border/50 shadow-sm bg-card/40 backdrop-blur-xl overflow-hidden">
             <CardHeader className="bg-primary/5 border-b border-border/50">
               <CardTitle className="text-xl">Información Nutricional</CardTitle>
             </CardHeader>
@@ -161,7 +181,7 @@ export function RecipeDetailView({ meal, translatedData, nutritionData }: Recipe
                   <p className="text-sm text-muted-foreground">Valores estimados totales</p>
                 </div>
               )}
-              
+
               <Separator />
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1 bg-background/50 p-3 rounded-xl text-center">
@@ -189,7 +209,7 @@ export function RecipeDetailView({ meal, translatedData, nutritionData }: Recipe
               </div>
             </CardContent>
           </Card>
-          
+
           {meal.strYoutube && (
             <Card className="rounded-3xl border-border/50 shadow-sm bg-card/40 backdrop-blur-xl overflow-hidden">
               <CardHeader className="border-b border-border/50">
@@ -197,10 +217,10 @@ export function RecipeDetailView({ meal, translatedData, nutritionData }: Recipe
               </CardHeader>
               <CardContent className="p-0">
                 <a href={meal.strYoutube} target="_blank" rel="noreferrer" className="block relative group aspect-video bg-black">
-                  <Image 
-                    src={meal.strMealThumb} 
-                    alt="Thumbnail" 
-                    fill 
+                  <Image
+                    src={meal.strMealThumb}
+                    alt="Thumbnail"
+                    fill
                     className="object-cover opacity-60 transition-opacity group-hover:opacity-40"
                   />
                   <div className="absolute inset-0 flex items-center justify-center">
