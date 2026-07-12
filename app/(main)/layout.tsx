@@ -30,12 +30,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       
       {/* Desktop Sidebar (md and up) */}
       <aside className="hidden md:flex flex-col w-72 fixed inset-y-0 left-0 border-r bg-card/50 backdrop-blur-xl z-50">
-        <div className="p-6 flex items-center gap-3">
+        <Link href="/" className="p-6 flex items-center gap-3 hover:opacity-80 transition-opacity">
           <div className="bg-primary/20 p-2 rounded-xl text-primary">
             <Refrigerator className="w-6 h-6" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">NutriCraft</h1>
-        </div>
+        </Link>
 
         <div className="px-6 pb-6">
           <SearchFilterBar />
@@ -84,12 +84,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </Button>
               } />
               <SheetContent side="left" className="w-72 p-0 flex flex-col">
-                <div className="p-6 flex items-center gap-3 border-b">
+                <Link href="/" className="p-6 flex items-center gap-3 border-b hover:opacity-80 transition-opacity">
                   <div className="bg-primary/20 p-2 rounded-xl text-primary">
                     <Refrigerator className="w-6 h-6" />
                   </div>
                   <h1 className="text-xl font-bold tracking-tight text-foreground">NutriCraft</h1>
-                </div>
+                </Link>
                 <nav className="flex-1 p-4 flex flex-col gap-1 overflow-y-auto">
                   {navLinks.map((link) => {
                     const Icon = link.icon;
@@ -107,10 +107,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </SheetContent>
             </Sheet>
             
-            <div className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <Refrigerator className="w-5 h-5 text-primary" />
               <h1 className="text-lg font-bold tracking-tight text-foreground">NutriCraft</h1>
-            </div>
+            </Link>
           </div>
           
           <div className="flex items-center gap-2">
