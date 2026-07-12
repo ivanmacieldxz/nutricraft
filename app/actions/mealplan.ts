@@ -1,6 +1,20 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
+
+async function ensureUserExists(userId: string) {
+  const existingUser = await prisma.user.findUnique({ where: { id: userId } });
+  if (!existingUser) {
+    const user = await currentUser();
+    const email = user?.emailAddresses?.[0]?.emailAddress || `${userId}@clerk.local`;
+    await prisma.user.create({
+      data: {
+        id: userId,
+        email,
+      }
+    });
+  }
+}
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { MealDBService } from "@/services/mealdb";
@@ -51,6 +65,7 @@ export async function addRecipeToPlan({
   });
 
   if (!plan) {
+    await ensureUserExists(userId);
     plan = await prisma.mealPlan.create({
       data: {
         userId,
@@ -215,7 +230,9 @@ export async function generateShoppingList(weekStartDate: Date) {
     await prisma.shoppingListItem.deleteMany({
       where: { shoppingListId: shoppingList.id },
     });
-  } else {
+  }
+  if (!shoppingList) {
+    await ensureUserExists(userId);
     shoppingList = await prisma.shoppingList.create({
       data: {
         userId,

@@ -15,11 +15,10 @@ function getMonday(d: Date) {
   return date;
 }
 
-export default async function PlansPage({
-  searchParams,
-}: {
-  searchParams: { week?: string };
+export default async function PlansPage(props: {
+  searchParams: Promise<{ week?: string }>;
 }) {
+  const searchParams = await props.searchParams;
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
