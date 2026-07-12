@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ChefHat } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { areaToCountryEs } from "@/lib/constants";
+import { SaveRecipeButton } from "./SaveRecipeButton";
 import {
   Tooltip,
   TooltipContent,
@@ -40,6 +41,13 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
           </span>
         </div>
       )}
+      
+      <SaveRecipeButton 
+        idMeal={recipe.idMeal} 
+        strMeal={recipe.strMeal} 
+        strMealThumb={recipe.strMealThumb} 
+      />
+
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-80 transition-opacity group-hover:opacity-100"></div>
 
