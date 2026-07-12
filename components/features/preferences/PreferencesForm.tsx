@@ -22,11 +22,8 @@ interface PreferencesFormProps {
 }
 
 const COMMON_DIETS = [
-  { id: "vegetarian", label: "Vegetariano" },
-  { id: "vegan", label: "Vegano" },
-  { id: "gluten-free", label: "Sin Gluten" },
-  { id: "keto", label: "Keto" },
-  { id: "paleo", label: "Paleo" },
+  { id: "Vegetarian", label: "Vegetariano" },
+  { id: "Vegan", label: "Vegano" },
 ];
 
 export function PreferencesForm({ initialData }: PreferencesFormProps) {
@@ -51,9 +48,7 @@ export function PreferencesForm({ initialData }: PreferencesFormProps) {
 
   const handleDietToggle = (dietId: string) => {
     setDiets((prev) =>
-      prev.includes(dietId)
-        ? prev.filter((d) => d !== dietId)
-        : [...prev, dietId]
+      prev.includes(dietId) ? [] : [dietId]
     );
   };
 
@@ -154,10 +149,10 @@ export function PreferencesForm({ initialData }: PreferencesFormProps) {
         </div>
         
         <p className="text-sm text-muted-foreground mb-6">
-          Selecciona las dietas que sigues. Esto nos ayudará a filtrar las recetas sugeridas.
+          Selecciona tu dieta (solo puedes elegir una). Esto nos ayudará a filtrar las recetas sugeridas.
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {COMMON_DIETS.map((diet) => (
             <div key={diet.id} className="flex items-center space-x-2 p-3 border rounded-xl hover:bg-accent/50 transition-colors">
               <Checkbox
