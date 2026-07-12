@@ -54,8 +54,8 @@ export function WeeklyGrid({ plan, weekStartDate }: WeeklyGridProps) {
 
   return (
     <div className="w-full pb-4">
-      {/* Mobile Layout (< md) */}
-      <div className="flex flex-col gap-8 md:hidden">
+      {/* Mobile Layout (< xl) */}
+      <div className="flex flex-col gap-8 xl:hidden">
         {DAYS.map((day, dayIdx) => (
           <div key={day} className="flex flex-col gap-3">
             <h3 className="font-bold text-xl text-foreground border-b border-border/50 pb-2">{day}</h3>
@@ -112,8 +112,8 @@ export function WeeklyGrid({ plan, weekStartDate }: WeeklyGridProps) {
         ))}
       </div>
 
-      {/* Desktop Layout (md+) */}
-      <div className="hidden md:block w-full overflow-x-auto">
+      {/* Desktop Layout (xl+) */}
+      <div className="hidden xl:block w-full overflow-x-auto">
         <div className="min-w-[800px] grid grid-cols-8 gap-4">
           {/* Header de la tabla */}
           <div className="flex items-end pb-4 font-bold text-muted-foreground border-b border-border/50">

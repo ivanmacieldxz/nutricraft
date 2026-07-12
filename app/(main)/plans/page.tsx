@@ -35,7 +35,7 @@ export default async function PlansPage(props: {
   ]);
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col gap-6">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col xl:gap-6">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-foreground">Planificador</h2>
@@ -62,7 +62,7 @@ export default async function PlansPage(props: {
           </TabsTrigger>
         </TabsList>
 
-        <div className="mt-8">
+        <div className="xl:mt-8">
           <TabsContent value="planner" className="m-0 focus-visible:outline-none focus-visible:ring-0">
             <WeeklyGrid plan={mealPlan} weekStartDate={weekStartDate} />
           </TabsContent>
