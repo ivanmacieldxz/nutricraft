@@ -102,8 +102,6 @@ export async function addRecipeToHistory(externalRecipeId: string, title: string
       imageUrl,
     },
   });
-  
-  revalidatePath("/saved");
 }
 
 /**
