@@ -225,7 +225,20 @@ export async function generateShoppingList(weekStartDate: Date) {
     where: { userId, weekStartDate },
   });
 
+  let existingCheckedMap = new Map<string, { isChecked: boolean, isHidden: boolean }>();
   if (shoppingList) {
+    const existingItems = await prisma.shoppingListItem.findMany({
+      where: { shoppingListId: shoppingList.id },
+      select: { ingredientName: true, isChecked: true, isHidden: true }
+    });
+    
+    existingItems.forEach(item => {
+      existingCheckedMap.set(item.ingredientName, {
+        isChecked: item.isChecked,
+        isHidden: item.isHidden
+      });
+    });
+
     // Eliminar los items anteriores
     await prisma.shoppingListItem.deleteMany({
       where: { shoppingListId: shoppingList.id },
@@ -243,10 +256,15 @@ export async function generateShoppingList(weekStartDate: Date) {
 
   // Insertar los nuevos
   await prisma.shoppingListItem.createMany({
-    data: newShoppingListItems.map(item => ({
-      shoppingListId: shoppingList!.id,
-      ...item,
-    })),
+    data: newShoppingListItems.map(item => {
+      const prev = existingCheckedMap.get(item.ingredientName);
+      return {
+        shoppingListId: shoppingList!.id,
+        ...item,
+        isChecked: prev?.isChecked || false,
+        isHidden: prev?.isHidden || false,
+      };
+    }),
   });
 
   revalidatePath("/plans");
@@ -269,6 +287,28 @@ export async function toggleShoppingListItem(itemId: string, isChecked: boolean)
   await prisma.shoppingListItem.update({
     where: { id: itemId },
     data: { isChecked },
+  });
+
+  revalidatePath("/plans");
+  return { success: true };
+}
+
+export async function hideShoppingListItem(itemId: string) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const item = await prisma.shoppingListItem.findUnique({
+    where: { id: itemId },
+    include: { shoppingList: true },
+  });
+
+  if (!item || item.shoppingList.userId !== userId) {
+    throw new Error("Not found or unauthorized");
+  }
+
+  await prisma.shoppingListItem.update({
+    where: { id: itemId },
+    data: { isHidden: true },
   });
 
   revalidatePath("/plans");
