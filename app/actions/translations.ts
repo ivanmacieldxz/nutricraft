@@ -81,3 +81,26 @@ export async function getTranslatedRecipe(meal: MealDetail): Promise<TranslatedR
     ingredients: ingredientsEs
   };
 }
+
+export async function translateToEnglish(text: string): Promise<string> {
+  if (!text || !text.trim()) return text;
+  try {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl=en&dt=t`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `q=${encodeURIComponent(text)}`
+    });
+    
+    if (!res.ok) return text;
+    const data = await res.json();
+    const translatedSegments = data[0] || [];
+    const fullTranslatedText = translatedSegments.map((seg: any) => seg[0]).join('');
+    return fullTranslatedText.trim();
+  } catch (error) {
+    console.error("Translation to English error:", error);
+    return text;
+  }
+}

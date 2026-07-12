@@ -14,6 +14,7 @@ import { MealDBService, MealPreview } from "@/services/mealdb";
 import { useDebounce } from "@/hooks/use-debounce";
 import Image from "next/image";
 import { addRecipeToPlan } from "@/app/actions/mealplan";
+import { translateToEnglish } from "@/app/actions/translations";
 import { toast } from "sonner";
 
 interface RecipeSearchModalProps {
@@ -53,8 +54,20 @@ export function RecipeSearchModal({
       }
       setIsLoading(true);
       try {
-        const data = await MealDBService.searchMeals(debouncedQuery);
-        setResults(data || []);
+        const englishQuery = await translateToEnglish(debouncedQuery);
+        const data1 = await MealDBService.searchMeals(englishQuery) || [];
+        
+        let data2: MealPreview[] = [];
+        if (englishQuery.toLowerCase() !== debouncedQuery.toLowerCase()) {
+          data2 = await MealDBService.searchMeals(debouncedQuery) || [];
+        }
+        
+        const merged = [...data1, ...data2];
+        const uniqueMap = new Map();
+        merged.forEach(m => uniqueMap.set(m.idMeal, m));
+        const uniqueResults = Array.from(uniqueMap.values()) as MealPreview[];
+        uniqueResults.sort((a, b) => a.strMeal.localeCompare(b.strMeal));
+        setResults(uniqueResults);
       } catch (error) {
         toast.error("Error al buscar recetas");
       } finally {

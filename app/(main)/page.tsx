@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { MealDBService, MealPreview } from "@/services/mealdb";
 import { RecipeCard } from "@/components/features/RecipeCard";
+import { translateToEnglish } from "@/app/actions/translations";
 
 import { Suspense } from "react";
 
@@ -68,7 +69,18 @@ function HomeContent() {
               data = (data || []).filter(r => r.strMeal.toLowerCase().includes(lowerQ));
             }
           } else if (query) {
-            data = await MealDBService.searchMeals(query);
+            const englishQuery = await translateToEnglish(query);
+            const data1 = await MealDBService.searchMeals(englishQuery) || [];
+            
+            let data2: MealPreview[] = [];
+            if (englishQuery.toLowerCase() !== query.toLowerCase()) {
+              data2 = await MealDBService.searchMeals(query) || [];
+            }
+            
+            const merged = [...data1, ...data2];
+            const uniqueMap = new Map();
+            merged.forEach(m => uniqueMap.set(m.idMeal, m));
+            data = Array.from(uniqueMap.values());
           }
           
           if (!isSubscribed) return;
