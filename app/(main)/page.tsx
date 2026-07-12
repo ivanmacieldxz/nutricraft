@@ -26,12 +26,23 @@ function HomeContent() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
 
+  const [prefsLoaded, setPrefsLoaded] = useState(false);
+  const [preferredDiet, setPreferredDiet] = useState<string | null>(null);
+
+  useEffect(() => {
+    getUserPreferences().then((prefs) => {
+      setPreferredDiet(prefs?.diets?.[0] || null);
+      setPrefsLoaded(true);
+    });
+  }, []);
+
   // Usamos una ref para asegurarnos de que loadMore solo actúe sobre los datos de la búsqueda actual
   const currentQuerySig = React.useRef("");
   const sig = `${query}|${type}|${filterValue}`;
 
   // Fetch initial results when search params change
   useEffect(() => {
+    if (!prefsLoaded) return;
     let isSubscribed = true;
 
     const fetchRecipes = async () => {
@@ -43,10 +54,9 @@ function HomeContent() {
         let hasMoreData = false;
 
         if (!query && !type) {
-          const prefs = await getUserPreferences();
-          if (prefs && prefs.diets && prefs.diets.length > 0) {
+          if (preferredDiet) {
             // Modo Dieta Preferida
-            data = await MealDBService.filterByCategory(prefs.diets[0]);
+            data = await MealDBService.filterByCategory(preferredDiet);
             if (!isSubscribed) return;
             setAllRecipes(data);
             const displayed = data.slice(0, ITEMS_PER_PAGE);
@@ -125,7 +135,7 @@ function HomeContent() {
     return () => {
       isSubscribed = false;
     };
-  }, [query, type, filterValue, sig]);
+  }, [query, type, filterValue, sig, prefsLoaded, preferredDiet]);
 
   const observer = React.useRef<IntersectionObserver | null>(null);
   const lastElementRef = React.useCallback(
@@ -154,9 +164,7 @@ function HomeContent() {
         setLoadingMore(true);
         try {
           if (!query && !type) {
-            const prefs = await getUserPreferences();
-            if (prefs && prefs.diets && prefs.diets.length > 0) {
-              const preferredDiet = prefs.diets[0];
+            if (preferredDiet) {
               const startIndex = (page - 1) * ITEMS_PER_PAGE;
               const endIndex = startIndex + ITEMS_PER_PAGE;
               
@@ -179,14 +187,21 @@ function HomeContent() {
                   const cat = item.strCategory?.toLowerCase() || "";
                   const pref = preferredDiet.toLowerCase();
                   
-                  // Una receta Vegana respeta la dieta Vegetariana
-                  const isCompatible = cat === pref || (pref === "vegetarian" && cat === "vegan");
-                  
-                  if (!isCompatible) {
-                    const labelName = preferredDiet === "Vegetarian" ? "Vegetariano" : "Vegano";
-                    return { ...item, notRespectsDiet: `✕ ${labelName}` };
+                  if (cat === pref) return item;
+
+                  // Si soy vegetariano y sale una vegana, es compatible (aviso verde)
+                  if (pref === "vegetarian" && cat === "vegan") {
+                    return { ...item, dietBadge: { text: "Vegano", type: "info" } };
                   }
-                  return item;
+                  
+                  // Si soy vegano y sale una vegetariana, NO es compatible (aviso rojo)
+                  if (pref === "vegan" && cat === "vegetarian") {
+                    return { ...item, dietBadge: { text: "Vegetariano", type: "destructive" } };
+                  }
+                  
+                  // Para el resto (ej. pollo), es destructivo
+                  const labelName = preferredDiet === "Vegetarian" ? "Vegetariano" : "Vegano";
+                  return { ...item, dietBadge: { text: `✕ ${labelName}`, type: "destructive" } };
                 });
                 
                 setDisplayedRecipes((prev) => {

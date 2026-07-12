@@ -6,7 +6,10 @@ export interface MealPreview {
   strMealThumb: string;
   strArea?: string;
   strCategory?: string;
-  notRespectsDiet?: string;
+  dietBadge?: {
+    text: string;
+    type: "destructive" | "info";
+  };
 }
 
 export interface MealDBResponse<T> {
