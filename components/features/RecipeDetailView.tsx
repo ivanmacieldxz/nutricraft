@@ -15,46 +15,68 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChefHat, Bookmark, CalendarPlus, CheckCircle2, PlayCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PlanRecipeModal } from "./meal-plan/PlanRecipeModal";
+import { toggleSavedRecipe } from "@/app/actions/saved";
 
 interface RecipeDetailViewProps {
   meal: MealDetail;
   translatedData: TranslatedRecipeDetail;
   nutritionData: NutritionData | null;
   userAllergies?: string[];
+  initialIsSaved?: boolean;
 }
 
-export function RecipeDetailView({ meal, translatedData, nutritionData, userAllergies = [] }: RecipeDetailViewProps) {
+export function RecipeDetailView({ meal, translatedData, nutritionData, userAllergies = [], initialIsSaved = false }: RecipeDetailViewProps) {
   const { isSignedIn } = useUser();
   const [checkedIngredients, setCheckedIngredients] = useState<Record<number, boolean>>({});
   const [hasWarnedSave, setHasWarnedSave] = useState(false);
+  const [isSaved, setIsSaved] = useState(initialIsSaved);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Compute if any translated ingredient contains an allergy
   const hasAllergies = translatedData.ingredients.some((ing) =>
     userAllergies.some((allergy) => ing.toLowerCase().includes(allergy.toLowerCase()))
   );
 
-  const handleProtectedAction = (action: string) => {
+  const handleProtectedAction = async (action: string) => {
     if (!isSignedIn) {
       toast.error(`Debes iniciar sesión para ${action} recetas.`);
       return;
     }
     
-    if (action === "guardar" && hasAllergies && !hasWarnedSave) {
-      toast.warning("¡Atención! Esta receta contiene alergias para ti.", {
-         description: "Contiene ingredientes que has marcado como rechazados en tu perfil.",
-         action: {
-           label: "Guardar igual",
-           onClick: () => {
-             setHasWarnedSave(true);
-             toast.success(`¡Receta guardada! (Próximamente disponible)`);
-           }
-         },
-         duration: 8000,
-      });
-      return;
+    if (action === "guardar") {
+      if (hasAllergies && !hasWarnedSave && !isSaved) {
+        toast.warning("¡Atención! Esta receta contiene alergias para ti.", {
+           description: "Contiene ingredientes que has marcado como rechazados en tu perfil.",
+           action: {
+             label: "Guardar igual",
+             onClick: () => {
+               setHasWarnedSave(true);
+               executeToggleSave();
+             }
+           },
+           duration: 8000,
+        });
+        return;
+      }
+      await executeToggleSave();
     }
-    
-    toast.success(`¡Receta guardada! (Próximamente disponible)`);
+  };
+
+  const executeToggleSave = async () => {
+    setIsSaving(true);
+    try {
+      const res = await toggleSavedRecipe(meal.idMeal, translatedData.title, meal.strMealThumb);
+      setIsSaved(res.saved);
+      if (res.saved) {
+        toast.success("Receta guardada en tus favoritas");
+      } else {
+        toast.info("Receta eliminada de favoritas");
+      }
+    } catch (error) {
+      toast.error("Ocurrió un error al guardar la receta");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const toggleIngredient = (index: number) => {
@@ -107,13 +129,19 @@ export function RecipeDetailView({ meal, translatedData, nutritionData, userAlle
 
           <div className="flex items-center gap-3">
             <Button
-              variant="secondary"
+              variant={isSaved ? "default" : "secondary"}
               size="lg"
+              disabled={isSaving}
               onClick={() => handleProtectedAction("guardar")}
-              className="rounded-full shadow-lg hover:scale-105 transition-transform backdrop-blur-md bg-white/10 text-white border border-white/20 hover:bg-white/20"
+              className={cn(
+                "rounded-full shadow-lg hover:scale-105 transition-transform backdrop-blur-md border",
+                isSaved 
+                  ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90" 
+                  : "bg-white/10 text-white border-white/20 hover:bg-white/20"
+              )}
             >
-              <Bookmark className="w-5 h-5 mr-2" />
-              Guardar
+              <Bookmark className={cn("w-5 h-5 mr-2", isSaved && "fill-current")} />
+              {isSaved ? "Guardada" : "Guardar"}
             </Button>
             <PlanRecipeModal 
               recipe={{ idMeal: meal.idMeal, strMeal: translatedData.title, strMealThumb: meal.strMealThumb }} 

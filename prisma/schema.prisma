@@ -16,6 +16,7 @@ model User {
   mealPlans        MealPlan[]
   savedRecipes     SavedRecipe[]
   shoppingLists    ShoppingList[]
+  recipeHistory    RecipeHistory[]
 }
 
 model Preferences {
@@ -78,4 +79,16 @@ model ShoppingListItem {
   unit             String
   isChecked        Boolean      @default(false)
   isHidden         Boolean      @default(false)
+}
+
+model RecipeHistory {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  externalRecipeId String   // ID de TheMealDB
+  title            String
+  imageUrl         String?
+  visitedAt        DateTime @default(now())
+
+  @@unique([userId, externalRecipeId])
 }
