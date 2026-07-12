@@ -30,10 +30,16 @@ function HomeContent() {
   const [preferredDiet, setPreferredDiet] = useState<string | null>(null);
 
   useEffect(() => {
-    getUserPreferences().then((prefs) => {
-      setPreferredDiet(prefs?.diets?.[0] || null);
-      setPrefsLoaded(true);
-    });
+    getUserPreferences()
+      .then((prefs) => {
+        setPreferredDiet(prefs?.diets?.[0] || null);
+        setPrefsLoaded(true);
+      })
+      .catch(() => {
+        // Fallback para usuarios no autenticados
+        setPreferredDiet(null);
+        setPrefsLoaded(true);
+      });
   }, []);
 
   // Usamos una ref para asegurarnos de que loadMore solo actúe sobre los datos de la búsqueda actual
