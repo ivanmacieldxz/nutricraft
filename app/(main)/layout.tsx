@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
 import { UserButton, useUser } from "@clerk/nextjs";
-import { Refrigerator, Home, Calendar, Bookmark, Settings, Menu } from "lucide-react";
+import { Refrigerator, Home, Calendar, Bookmark, Settings, Menu, PieChart } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SearchFilterBar } from "@/components/features/SearchFilterBar";
@@ -19,6 +19,7 @@ import {
 const navLinks = [
   { name: "Inicio", href: "/", icon: Home },
   { name: "Planes de Comida", href: "/plans", icon: Calendar },
+  { name: "Estadísticas", href: "/nutrition-dashboard", icon: PieChart },
   { name: "Guardados", href: "/saved", icon: Bookmark },
   { name: "Preferencias", href: "/preferences", icon: Settings },
 ];
@@ -29,7 +30,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-background">
-      
+
       {/* Desktop Sidebar (md and up) */}
       <aside className="hidden md:flex flex-col w-72 fixed inset-y-0 left-0 border-r bg-card/50 backdrop-blur-xl z-50">
         <Link href="/" className="p-6 flex items-center gap-3 hover:opacity-80 transition-opacity">
@@ -51,8 +52,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             const isActive = pathname === link.href;
             const isProtected = link.href !== "/";
             return (
-              <Link 
-                key={link.href} 
+              <Link
+                key={link.href}
                 href={link.href}
                 onClick={(e) => {
                   if (isProtected && !isSignedIn) {
@@ -110,8 +111,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     const isActive = pathname === link.href;
                     const isProtected = link.href !== "/";
                     return (
-                      <Link 
-                        key={link.href} 
+                      <Link
+                        key={link.href}
                         href={link.href}
                         onClick={(e) => {
                           if (isProtected && !isSignedIn) {
@@ -130,13 +131,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </nav>
               </SheetContent>
             </Sheet>
-            
+
             <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <Refrigerator className="w-5 h-5 text-primary" />
               <h1 className="text-lg font-bold tracking-tight text-foreground">NutriCraft</h1>
             </Link>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <ThemeToggle />
             {isSignedIn ? (

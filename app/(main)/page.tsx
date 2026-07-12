@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { MealDBService, MealPreview } from "@/services/mealdb";
 import { RecipeCard } from "@/components/features/RecipeCard";
 import { translateToEnglish } from "@/app/actions/translations";
-
+import { getUserPreferences } from "@/app/actions/preferences";
 import { Suspense } from "react";
 
 const ITEMS_PER_PAGE = 12;
@@ -26,12 +26,23 @@ function HomeContent() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
 
+  const [prefsLoaded, setPrefsLoaded] = useState(false);
+  const [preferredDiet, setPreferredDiet] = useState<string | null>(null);
+
+  useEffect(() => {
+    getUserPreferences().then((prefs) => {
+      setPreferredDiet(prefs?.diets?.[0] || null);
+      setPrefsLoaded(true);
+    });
+  }, []);
+
   // Usamos una ref para asegurarnos de que loadMore solo actúe sobre los datos de la búsqueda actual
   const currentQuerySig = React.useRef("");
   const sig = `${query}|${type}|${filterValue}`;
 
   // Fetch initial results when search params change
   useEffect(() => {
+    if (!prefsLoaded) return;
     let isSubscribed = true;
 
     const fetchRecipes = async () => {
@@ -43,13 +54,24 @@ function HomeContent() {
         let hasMoreData = false;
 
         if (!query && !type) {
-          // Modo Descubrimiento Puro
-          data = await MealDBService.getTrulyRandomMeals(ITEMS_PER_PAGE);
-          if (!isSubscribed) return;
-          setAllRecipes([]); 
-          setDisplayedRecipes(data);
-          setHasMore(true);
-          hasMoreData = true;
+          if (preferredDiet) {
+            // Modo Dieta Preferida
+            data = await MealDBService.filterByCategory(preferredDiet);
+            if (!isSubscribed) return;
+            setAllRecipes(data);
+            const displayed = data.slice(0, ITEMS_PER_PAGE);
+            setDisplayedRecipes(displayed);
+            hasMoreData = true; // Siempre hay más porque hacemos fallback a recetas aleatorias
+            setHasMore(true);
+          } else {
+            // Modo Descubrimiento Puro
+            data = await MealDBService.getTrulyRandomMeals(ITEMS_PER_PAGE);
+            if (!isSubscribed) return;
+            setAllRecipes([]); 
+            setDisplayedRecipes(data);
+            setHasMore(true);
+            hasMoreData = true;
+          }
         } else {
           // Modo Búsqueda y/o Filtro
           if (type && filterValue) {
@@ -113,7 +135,7 @@ function HomeContent() {
     return () => {
       isSubscribed = false;
     };
-  }, [query, type, filterValue, sig]);
+  }, [query, type, filterValue, sig, prefsLoaded, preferredDiet]);
 
   const observer = React.useRef<IntersectionObserver | null>(null);
   const lastElementRef = React.useCallback(
@@ -142,22 +164,71 @@ function HomeContent() {
         setLoadingMore(true);
         try {
           if (!query && !type) {
-            const newItems = await MealDBService.getTrulyRandomMeals(ITEMS_PER_PAGE);
-            if (!isSubscribed) return;
-            if (newItems.length > 0) {
-              setDisplayedRecipes((prev) => {
-                const existingIds = new Set(prev.map((r) => r.idMeal));
-                const uniqueItems = newItems.filter((i) => !existingIds.has(i.idMeal));
-                if (uniqueItems.length > 0) {
-                  setHasMore(true);
+            if (preferredDiet) {
+              const startIndex = (page - 1) * ITEMS_PER_PAGE;
+              const endIndex = startIndex + ITEMS_PER_PAGE;
+              
+              if (startIndex < allRecipes.length) {
+                const newItems = allRecipes.slice(startIndex, endIndex);
+                if (!isSubscribed) return;
+                setDisplayedRecipes((prev) => {
+                  const existingIds = new Set(prev.map((r) => r.idMeal));
+                  const uniqueItems = newItems.filter((i) => !existingIds.has(i.idMeal));
                   return [...prev, ...uniqueItems];
-                } else {
-                  setHasMore(false);
-                  return prev;
-                }
-              });
+                });
+                setHasMore(true);
+              } else {
+                // Out of preferred recipes, fetch random
+                const newItems = await MealDBService.getTrulyRandomMeals(ITEMS_PER_PAGE);
+                if (!isSubscribed) return;
+                
+                // Tag them if they don't respect the diet
+                const taggedItems = newItems.map(item => {
+                  const cat = item.strCategory?.toLowerCase() || "";
+                  const pref = preferredDiet.toLowerCase();
+                  
+                  if (cat === pref) return item;
+
+                  // Si soy vegetariano y sale una vegana, es compatible (aviso verde)
+                  if (pref === "vegetarian" && cat === "vegan") {
+                    return { ...item, dietBadge: { text: "Vegano", type: "info" as const } };
+                  }
+                  
+                  // Si soy vegano y sale una vegetariana, NO es compatible (aviso rojo)
+                  if (pref === "vegan" && cat === "vegetarian") {
+                    return { ...item, dietBadge: { text: "Vegetariano", type: "destructive" as const } };
+                  }
+                  
+                  // Para el resto (ej. pollo), es destructivo
+                  const labelName = preferredDiet === "Vegetarian" ? "Vegetariano" : "Vegano";
+                  return { ...item, dietBadge: { text: `✕ ${labelName}`, type: "destructive" as const } };
+                });
+                
+                setDisplayedRecipes((prev) => {
+                  const existingIds = new Set(prev.map((r) => r.idMeal));
+                  const uniqueItems = taggedItems.filter((i) => !existingIds.has(i.idMeal));
+                  return [...prev, ...uniqueItems];
+                });
+                setHasMore(true);
+              }
             } else {
-              setHasMore(false);
+              const newItems = await MealDBService.getTrulyRandomMeals(ITEMS_PER_PAGE);
+              if (!isSubscribed) return;
+              if (newItems.length > 0) {
+                setDisplayedRecipes((prev) => {
+                  const existingIds = new Set(prev.map((r) => r.idMeal));
+                  const uniqueItems = newItems.filter((i) => !existingIds.has(i.idMeal));
+                  if (uniqueItems.length > 0) {
+                    setHasMore(true);
+                    return [...prev, ...uniqueItems];
+                  } else {
+                    setHasMore(false);
+                    return prev;
+                  }
+                });
+              } else {
+                setHasMore(false);
+              }
             }
           } else {
             const startIndex = (page - 1) * ITEMS_PER_PAGE;

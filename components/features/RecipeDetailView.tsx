@@ -20,18 +20,41 @@ interface RecipeDetailViewProps {
   meal: MealDetail;
   translatedData: TranslatedRecipeDetail;
   nutritionData: NutritionData | null;
+  userAllergies?: string[];
 }
 
-export function RecipeDetailView({ meal, translatedData, nutritionData }: RecipeDetailViewProps) {
+export function RecipeDetailView({ meal, translatedData, nutritionData, userAllergies = [] }: RecipeDetailViewProps) {
   const { isSignedIn } = useUser();
   const [checkedIngredients, setCheckedIngredients] = useState<Record<number, boolean>>({});
+  const [hasWarnedSave, setHasWarnedSave] = useState(false);
+
+  // Compute if any translated ingredient contains an allergy
+  const hasAllergies = translatedData.ingredients.some((ing) =>
+    userAllergies.some((allergy) => ing.toLowerCase().includes(allergy.toLowerCase()))
+  );
 
   const handleProtectedAction = (action: string) => {
     if (!isSignedIn) {
       toast.error(`Debes iniciar sesión para ${action} recetas.`);
       return;
     }
-    toast.success(`¡Receta añadida! (Próximamente disponible)`);
+    
+    if (action === "guardar" && hasAllergies && !hasWarnedSave) {
+      toast.warning("¡Atención! Esta receta contiene alergias para ti.", {
+         description: "Contiene ingredientes que has marcado como rechazados en tu perfil.",
+         action: {
+           label: "Guardar igual",
+           onClick: () => {
+             setHasWarnedSave(true);
+             toast.success(`¡Receta guardada! (Próximamente disponible)`);
+           }
+         },
+         duration: 8000,
+      });
+      return;
+    }
+    
+    toast.success(`¡Receta guardada! (Próximamente disponible)`);
   };
 
   const toggleIngredient = (index: number) => {
@@ -92,7 +115,10 @@ export function RecipeDetailView({ meal, translatedData, nutritionData }: Recipe
               <Bookmark className="w-5 h-5 mr-2" />
               Guardar
             </Button>
-            <PlanRecipeModal recipe={{ idMeal: meal.idMeal, strMeal: translatedData.title, strMealThumb: meal.strMealThumb }} />
+            <PlanRecipeModal 
+              recipe={{ idMeal: meal.idMeal, strMeal: translatedData.title, strMealThumb: meal.strMealThumb }} 
+              hasAllergyWarning={hasAllergies}
+            />
           </div>
         </div>
       </div>
