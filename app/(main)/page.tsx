@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { MealDBService, MealPreview } from "@/services/mealdb";
 import { RecipeCard } from "@/components/features/RecipeCard";
 import { translateToEnglish } from "@/app/actions/translations";
-
+import { getUserPreferences } from "@/app/actions/preferences";
 import { Suspense } from "react";
 
 const ITEMS_PER_PAGE = 12;
@@ -43,13 +43,25 @@ function HomeContent() {
         let hasMoreData = false;
 
         if (!query && !type) {
-          // Modo Descubrimiento Puro
-          data = await MealDBService.getTrulyRandomMeals(ITEMS_PER_PAGE);
-          if (!isSubscribed) return;
-          setAllRecipes([]); 
-          setDisplayedRecipes(data);
-          setHasMore(true);
-          hasMoreData = true;
+          const prefs = await getUserPreferences();
+          if (prefs && prefs.diets && prefs.diets.length > 0) {
+            // Modo Dieta Preferida
+            data = await MealDBService.filterByCategory(prefs.diets[0]);
+            if (!isSubscribed) return;
+            setAllRecipes(data);
+            const displayed = data.slice(0, ITEMS_PER_PAGE);
+            setDisplayedRecipes(displayed);
+            hasMoreData = data.length > ITEMS_PER_PAGE;
+            setHasMore(hasMoreData);
+          } else {
+            // Modo Descubrimiento Puro
+            data = await MealDBService.getTrulyRandomMeals(ITEMS_PER_PAGE);
+            if (!isSubscribed) return;
+            setAllRecipes([]); 
+            setDisplayedRecipes(data);
+            setHasMore(true);
+            hasMoreData = true;
+          }
         } else {
           // Modo Búsqueda y/o Filtro
           if (type && filterValue) {
@@ -142,22 +154,42 @@ function HomeContent() {
         setLoadingMore(true);
         try {
           if (!query && !type) {
-            const newItems = await MealDBService.getTrulyRandomMeals(ITEMS_PER_PAGE);
-            if (!isSubscribed) return;
-            if (newItems.length > 0) {
-              setDisplayedRecipes((prev) => {
-                const existingIds = new Set(prev.map((r) => r.idMeal));
-                const uniqueItems = newItems.filter((i) => !existingIds.has(i.idMeal));
-                if (uniqueItems.length > 0) {
-                  setHasMore(true);
+            const prefs = await getUserPreferences();
+            if (prefs && prefs.diets && prefs.diets.length > 0) {
+              const startIndex = (page - 1) * ITEMS_PER_PAGE;
+              const endIndex = startIndex + ITEMS_PER_PAGE;
+              const newItems = allRecipes.slice(startIndex, endIndex);
+              
+              if (!isSubscribed) return;
+              if (newItems.length > 0) {
+                setDisplayedRecipes((prev) => {
+                  const existingIds = new Set(prev.map((r) => r.idMeal));
+                  const uniqueItems = newItems.filter((i) => !existingIds.has(i.idMeal));
                   return [...prev, ...uniqueItems];
-                } else {
-                  setHasMore(false);
-                  return prev;
-                }
-              });
+                });
+                const stillHasMore = endIndex < allRecipes.length;
+                setHasMore(stillHasMore);
+              } else {
+                setHasMore(false);
+              }
             } else {
-              setHasMore(false);
+              const newItems = await MealDBService.getTrulyRandomMeals(ITEMS_PER_PAGE);
+              if (!isSubscribed) return;
+              if (newItems.length > 0) {
+                setDisplayedRecipes((prev) => {
+                  const existingIds = new Set(prev.map((r) => r.idMeal));
+                  const uniqueItems = newItems.filter((i) => !existingIds.has(i.idMeal));
+                  if (uniqueItems.length > 0) {
+                    setHasMore(true);
+                    return [...prev, ...uniqueItems];
+                  } else {
+                    setHasMore(false);
+                    return prev;
+                  }
+                });
+              } else {
+                setHasMore(false);
+              }
             }
           } else {
             const startIndex = (page - 1) * ITEMS_PER_PAGE;
