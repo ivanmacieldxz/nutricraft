@@ -191,17 +191,17 @@ function HomeContent() {
 
                   // Si soy vegetariano y sale una vegana, es compatible (aviso verde)
                   if (pref === "vegetarian" && cat === "vegan") {
-                    return { ...item, dietBadge: { text: "Vegano", type: "info" } };
+                    return { ...item, dietBadge: { text: "Vegano", type: "info" as const } };
                   }
                   
                   // Si soy vegano y sale una vegetariana, NO es compatible (aviso rojo)
                   if (pref === "vegan" && cat === "vegetarian") {
-                    return { ...item, dietBadge: { text: "Vegetariano", type: "destructive" } };
+                    return { ...item, dietBadge: { text: "Vegetariano", type: "destructive" as const } };
                   }
                   
                   // Para el resto (ej. pollo), es destructivo
                   const labelName = preferredDiet === "Vegetarian" ? "Vegetariano" : "Vegano";
-                  return { ...item, dietBadge: { text: `✕ ${labelName}`, type: "destructive" } };
+                  return { ...item, dietBadge: { text: `✕ ${labelName}`, type: "destructive" as const } };
                 });
                 
                 setDisplayedRecipes((prev) => {
