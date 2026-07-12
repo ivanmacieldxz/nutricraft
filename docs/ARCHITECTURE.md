@@ -6,7 +6,8 @@ Este documento define la arquitectura, los modelos de datos y la estrategia de i
 
 *   **Framework Core:** Next.js (App Router) para SSR/SSG, enrutamiento y API Routes.
 *   **Lenguaje:** TypeScript (Tipado estricto).
-*   **Estilos y UI:** Tailwind CSS para utilidades de diseño y layout, junto con **@material/web** (Google's Material Web Components) para todos los componentes interactivos de la interfaz, asegurando una adopción oficial y fiel de Material Design 3.
+*   **Estilos y UI:** Tailwind CSS para utilidades de diseño y layout, junto con componentes modulares propios (imitando Material Design 3).
+*   **Iconografía:** Lucide React.
 *   **Base de Datos:** PostgreSQL alojado en Neon (Serverless Postgres).
 *   **ORM:** Prisma ORM para acceso a datos seguro y tipado.
 *   **Autenticación:** Clerk Auth (manejo de sesiones, login/registro y perfiles).
