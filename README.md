@@ -8,18 +8,18 @@ NutriCraft es una aplicación web rápida, funcional y progresiva (PWA) diseñad
 - **Exploración de Recetas:** Búsqueda global, filtros por categorías y dietas.
 - **Planificador Semanal:** Organiza tus desayunos, almuerzos, meriendas y cenas para toda la semana.
 - **Lista de Compras Automática:** A partir de tu plan semanal, se genera una lista consolidada de ingredientes con cantidades exactas.
-- **Dashboard Nutricional:** Visualiza y analiza tu consumo calórico y de macronutrientes, integrado con Open Food Facts.
+- **Dashboard Nutricional:** Visualiza y analiza tu consumo calórico y de macronutrientes, integrado con CalorieNinjas.
 - **Personalización:** Establece tus metas nutricionales, alergias y preferencias dietéticas.
 - **Experiencia PWA:** Instalable en dispositivos móviles para una experiencia nativa y rápida en cualquier lugar.
 
 ## 🛠️ Stack Tecnológico
 
 - **Frontend:** Next.js (App Router), React, TypeScript.
-- **Estilos y UI:** Componentes web oficiales de Google (**@material/web**) implementando Material Design 3, complementados con Tailwind CSS para layout y espaciado.
+- **Estilos y UI:** Componentes de Shadcn UI (Radix) complementados con Tailwind CSS para layout y diseño moderno.
 - **Base de Datos:** PostgreSQL Serverless a través de Neon Database.
 - **ORM:** Prisma.
 - **Autenticación:** Clerk.
-- **APIs de Datos:** TheMealDB (Recetas) y Open Food Facts (Información Nutricional).
+- **APIs de Datos:** TheMealDB (Recetas) y CalorieNinjas API (Información Nutricional).
 - **Despliegue:** Vercel.
 
 ## 📱 Progressive Web App (PWA)

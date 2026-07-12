@@ -6,13 +6,14 @@ Este documento define la arquitectura, los modelos de datos y la estrategia de i
 
 *   **Framework Core:** Next.js (App Router) para SSR/SSG, enrutamiento y API Routes.
 *   **Lenguaje:** TypeScript (Tipado estricto).
-*   **Estilos y UI:** Tailwind CSS para utilidades de diseño y layout, junto con **@material/web** (Google's Material Web Components) para todos los componentes interactivos de la interfaz, asegurando una adopción oficial y fiel de Material Design 3.
+*   **Estilos y UI:** Tailwind CSS y Shadcn UI (Radix) para componentes modulares accesibles y diseño moderno (glassmorphism).
+*   **Iconografía:** Lucide React.
 *   **Base de Datos:** PostgreSQL alojado en Neon (Serverless Postgres).
 *   **ORM:** Prisma ORM para acceso a datos seguro y tipado.
 *   **Autenticación:** Clerk Auth (manejo de sesiones, login/registro y perfiles).
 *   **APIs Externas:**
     *   **TheMealDB:** Fuente principal de recetas.
-    *   **Open Food Facts:** Fuente de información nutricional de ingredientes.
+    *   **CalorieNinjas:** Fuente de información nutricional por ingredientes.
 *   **Despliegue:** Vercel.
 *   **PWA (Progressive Web App):** Configurado vía `@ducanh2912/next-pwa` (o similar compatible con App Router) y un `manifest.json` para permitir la instalación en dispositivos móviles y funcionamiento offline básico.
 
@@ -43,6 +44,7 @@ model User {
   mealPlans        MealPlan[]
   savedRecipes     SavedRecipe[]
   shoppingLists    ShoppingList[]
+  recipeHistory    RecipeHistory[]
 }
 
 model Preferences {
@@ -104,6 +106,19 @@ model ShoppingListItem {
   quantity         Float
   unit             String
   isChecked        Boolean      @default(false)
+  isHidden         Boolean      @default(false)
+}
+
+model RecipeHistory {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  externalRecipeId String   // ID de TheMealDB
+  title            String
+  imageUrl         String?
+  visitedAt        DateTime @default(now())
+
+  @@unique([userId, externalRecipeId])
 }
 ```
 
@@ -121,12 +136,12 @@ model ShoppingListItem {
 *   Se aprovechará el connection pooling provisto por Neon o Prisma Accelerate si fuera necesario.
 
 ### 3.3. APIs de Recetas e Ingredientes (Capa de Adaptación)
-De acuerdo a las reglas del proyecto (`rules.md`), los datos de TheMealDB y Open Food Facts **no se consumirán directamente** en el Frontend.
+De acuerdo a las reglas del proyecto (`rules.md`), los datos de TheMealDB y CalorieNinjas **no se consumirán directamente** en el Frontend.
 *   **Capa de Servicios (`@/services/`):** Crearemos clases o funciones para consultar estas APIs (ej. `MealDBService.getRecipeById(id)`).
 *   **DTOs y Mapeo:** Transformaremos las respuestas de la API en modelos internos (ej. unificando los campos `strIngredient1...20` de TheMealDB en un array estructurado de ingredientes).
 *   **Caché:**
-    *   La información de los ingredientes (Open Food Facts) se almacenará temporalmente (Redis, si se añade después, o caché en memoria de Next.js (`unstable_cache` o `fetch` cache) / localStorage en el cliente) para minimizar llamadas.
-    *   Fallbacks implementados: Si Open Food Facts no retorna datos para un ingrediente oscuro, se asumirá un valor por defecto seguro en la sumatoria de macros.
+    *   La información de los ingredientes (CalorieNinjas) se consultará de forma unificada agrupando ingredientes, y puede almacenarse temporalmente para minimizar llamadas a la API.
+    *   Fallbacks implementados: Si CalorieNinjas no retorna datos, se devolverá null y la UI reflejará que no hay datos disponibles.
 
 ### 3.4. PWA (Progressive Web App)
 Para lograr la instalación en dispositivos móviles y una experiencia app-like:
@@ -134,9 +149,9 @@ Para lograr la instalación en dispositivos móviles y una experiencia app-like:
 *   Se incluirá un archivo `public/manifest.json` definiendo el nombre "NutriCraft", iconos, colores del tema (siguiendo MD3) y `display: "standalone"`.
 *   Se agregarán las etiquetas meta necesarias en el layout principal (`app/layout.tsx`).
 
-### 3.5. Material Design 3 & @material/web
-*   Se utilizará la librería oficial **`@material/web`** para la renderización de todos los componentes de UI interactivos (botones, text fields, cards, diálogos) garantizando las especificaciones exactas de MD3 (elevaciones, colores dinámicos y ripple effects).
-*   Se generará un tema MD3 (Theme Builder) para obtener los tokens de color que consumirán los web components, y se mapearán también a Tailwind `tailwind.config.ts` como variables globales para su uso en utilidades de layout y espaciado.
+### 3.5. Shadcn UI (Radix) & Tailwind CSS
+*   Se utilizará la librería **Shadcn UI** basada en componentes sin estilos de Radix UI para garantizar accesibilidad (a11y) y control total sobre el marcado.
+*   Tailwind CSS se utiliza para orquestar un diseño moderno con enfoque en transparencias, bordes suaves (glassmorphism) y modo oscuro fluido mediante CSS variables.
 
 ---
 
@@ -147,10 +162,10 @@ Para lograr la instalación en dispositivos móviles y una experiencia app-like:
 ├── app/                  # Next.js App Router (Páginas, Layouts, API Routes)
 │   ├── api/              # Endpoints (ej. webhooks de clerk, trpc/endpoints)
 │   ├── (auth)/           # Rutas de login/registro (Clerk)
-│   ├── (dashboard)/      # Rutas principales (/meal-plan, /nutrition-dashboard, etc)
+│   ├── (main)/           # Rutas principales (/meal-plan, /nutrition-dashboard, /saved, etc)
 │   └── layout.tsx        # Layout root, meta tags para PWA
 ├── components/           # Componentes de UI (Atómicos y complejos)
-│   ├── ui/               # Componentes base (Botones, Inputs, Cards - MD3)
+│   ├── ui/               # Componentes base (Shadcn UI)
 │   └── features/         # Componentes específicos de un dominio (ej. RecipeCard)
 ├── lib/                  # Utilidades y configuración
 │   ├── prisma.ts         # Instancia de Prisma

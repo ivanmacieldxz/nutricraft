@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String          @id // Clerk User ID
+  email            String          @unique
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  preferences      Preferences?
+  mealPlans        MealPlan[]
+  savedRecipes     SavedRecipe[]
+  shoppingLists    ShoppingList[]
+  recipeHistory    RecipeHistory[]
+}
+
+model Preferences {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dailyCalories    Int?
+  dailyCarbs       Int?
+  dailyProtein     Int?
+  dailyFat         Int?
+  diets            String[] // ej. ["vegan", "gluten-free"]
+  allergies        String[] // ej. ["peanuts", "shellfish"]
+}
+
+model SavedRecipe {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  externalRecipeId String   // ID de TheMealDB
+  title            String   // Cacheado para no llamar a la API
+  imageUrl         String?
+  savedAt          DateTime @default(now())
+  
+  @@unique([userId, externalRecipeId])
+}
+
+model MealPlan {
+  id               String         @id @default(uuid())
+  userId           String
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekStartDate    DateTime       // Fecha del lunes de la semana
+  items            MealPlanItem[]
+}
+
+model MealPlanItem {
+  id               String   @id @default(uuid())
+  mealPlanId       String
+  mealPlan         MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+  dayOfWeek        Int      // 0 = Lunes, 6 = Domingo
+  mealType         String   // "breakfast", "lunch", "snack", "dinner"
+  externalRecipeId String   // ID de TheMealDB
+  title            String   // Cacheado
+  imageUrl         String?
+}
+
+model ShoppingList {
+  id               String             @id @default(uuid())
+  userId           String
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekStartDate    DateTime           // A qué semana corresponde
+  items            ShoppingListItem[]
+}
+
+model ShoppingListItem {
+  id               String       @id @default(uuid())
+  shoppingListId   String
+  shoppingList     ShoppingList @relation(fields: [shoppingListId], references: [id], onDelete: Cascade)
+  ingredientName   String
+  quantity         Float
+  unit             String
+  isChecked        Boolean      @default(false)
+  isHidden         Boolean      @default(false)
+}
+
+model RecipeHistory {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  externalRecipeId String   // ID de TheMealDB
+  title            String
+  imageUrl         String?
+  visitedAt        DateTime @default(now())
+
+  @@unique([userId, externalRecipeId])
+}
