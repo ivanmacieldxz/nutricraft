@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { getWeeklyNutritionStats, getUserPreferences } from "@/app/actions/nutrition";
+import { getWeeklyNutritionStats } from "@/app/actions/nutrition";
+import { getUserPreferences } from "@/app/actions/preferences";
 import { NutritionDashboardView } from "@/components/features/nutrition/NutritionDashboardView";
 import { PieChart, Settings2 } from "lucide-react";
 import Link from "next/link";

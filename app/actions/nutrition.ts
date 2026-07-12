@@ -107,13 +107,3 @@ export async function getWeeklyNutritionStats(weekStartDate: Date): Promise<Week
   };
 }
 
-export async function getUserPreferences() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
-  const preferences = await prisma.preferences.findUnique({
-    where: { userId },
-  });
-
-  return preferences;
-}
