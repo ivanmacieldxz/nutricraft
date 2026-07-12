@@ -4,12 +4,15 @@ import { MealPreview } from "@/services/mealdb";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChefHat } from "lucide-react";
+import { areaToCountryEs } from "@/lib/constants";
 
 interface RecipeCardProps {
   recipe: MealPreview;
 }
 
 export function RecipeCard({ recipe }: RecipeCardProps) {
+  const displayArea = recipe.strArea ? (areaToCountryEs[recipe.strArea] || recipe.strArea) : null;
+
   return (
     <Card className="group relative overflow-hidden rounded-3xl border-transparent shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-72">
       <Image
@@ -30,8 +33,12 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
 
         <div className="flex justify-between items-center mt-2">
           <div className="flex items-center text-white/90 text-sm gap-1.5 font-medium drop-shadow-md">
-            <ChefHat className="w-4 h-4 text-primary" />
-            TheMealDB
+            {displayArea && (
+              <>
+                <ChefHat className="w-4 h-4 text-primary" />
+                {displayArea}
+              </>
+            )}
           </div>
           <Link href={`/recipes/${recipe.idMeal}`}>
             <Button

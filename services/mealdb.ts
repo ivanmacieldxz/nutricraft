@@ -4,6 +4,7 @@ export interface MealPreview {
   idMeal: string;
   strMeal: string;
   strMealThumb: string;
+  strArea?: string;
 }
 
 export interface MealDBResponse<T> {
@@ -26,6 +27,7 @@ export const MealDBService = {
       idMeal: meal.idMeal,
       strMeal: meal.strMeal,
       strMealThumb: meal.strMealThumb,
+      strArea: meal.strArea,
     }));
   },
 
@@ -38,6 +40,7 @@ export const MealDBService = {
     const data: MealDBResponse<MealPreview> = await res.json();
     return data.meals || [];
   },
+  
   /**
    * Filtra recetas por categoría (ej: Seafood, Beef)
    */
@@ -55,7 +58,8 @@ export const MealDBService = {
     const res = await fetch(`${MEALDB_BASE_URL}/filter.php?a=${area}`);
     if (!res.ok) throw new Error("Error fetching meals by area");
     const data: MealDBResponse<MealPreview> = await res.json();
-    return data.meals || [];
+    // Agregamos manualmente el área ya que TheMealDB no la devuelve en filter.php
+    return (data.meals || []).map(m => ({ ...m, strArea: area }));
   },
 
   /**
@@ -74,6 +78,7 @@ export const MealDBService = {
           idMeal: meal.idMeal,
           strMeal: meal.strMeal,
           strMealThumb: meal.strMealThumb,
+          strArea: meal.strArea,
         };
       })
       .filter(Boolean) as MealPreview[];
