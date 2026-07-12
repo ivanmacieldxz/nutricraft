@@ -43,7 +43,7 @@ export default async function PlansPage(props: {
             Organizá tus comidas y generá tu lista de compras automáticamente.
           </p>
         </div>
-        
+
         <div className="text-sm font-medium bg-secondary text-secondary-foreground px-4 py-2 rounded-xl border flex items-center shadow-sm">
           <Calendar className="w-4 h-4 mr-2" />
           Semana del {weekStartDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
@@ -51,12 +51,12 @@ export default async function PlansPage(props: {
       </div>
 
       <Tabs defaultValue="planner" className="w-full mt-4">
-        <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto sm:mx-0 p-1 bg-secondary/50 rounded-xl">
-          <TabsTrigger value="planner" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+        <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto bg-secondary/70 rounded-lg">
+          <TabsTrigger value="planner" className="rounded-lg data-[active]:bg-background data-[active]:shadow-sm data-[active]:text-foreground text-muted-foreground transition-all p-1">
             <Calendar className="w-4 h-4 mr-2" />
             Plan Semanal
           </TabsTrigger>
-          <TabsTrigger value="shopping" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger value="shopping" className="rounded-lg data-[active]:bg-background data-[active]:shadow-sm data-[active]:text-foreground text-muted-foreground transition-all">
             <ShoppingBag className="w-4 h-4 mr-2" />
             Lista de Compras
           </TabsTrigger>
@@ -66,7 +66,7 @@ export default async function PlansPage(props: {
           <TabsContent value="planner" className="m-0 focus-visible:outline-none focus-visible:ring-0">
             <WeeklyGrid plan={mealPlan} weekStartDate={weekStartDate} />
           </TabsContent>
-          
+
           <TabsContent value="shopping" className="m-0 focus-visible:outline-none focus-visible:ring-0">
             <ShoppingListView shoppingList={shoppingList} weekStartDate={weekStartDate} />
           </TabsContent>
