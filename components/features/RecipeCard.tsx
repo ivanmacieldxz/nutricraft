@@ -14,7 +14,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
   const displayArea = recipe.strArea ? (areaToCountryEs[recipe.strArea] || recipe.strArea) : null;
 
   return (
-    <Card className="group relative overflow-hidden rounded-3xl border-transparent shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-72">
+    <Card className="group relative overflow-hidden rounded-3xl border-transparent shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 aspect-square">
       <Image
         src={recipe.strMealThumb}
         alt={recipe.strMeal}
@@ -27,7 +27,10 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
 
       {/* Content Superimposed */}
       <div className="absolute inset-x-0 bottom-0 p-5 flex flex-col">
-        <h3 className="text-xl font-bold text-white line-clamp-2 leading-tight drop-shadow-md">
+        <h3 
+          className="text-xl font-bold text-white line-clamp-2 leading-tight drop-shadow-md"
+          title={recipe.strMeal}
+        >
           {recipe.strMeal}
         </h3>
 
