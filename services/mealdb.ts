@@ -1,4 +1,4 @@
-const MEALDB_BASE_URL = "https://www.themealdb.com/api/json/v1/1";
+const MEALDB_BASE_URL = process.env.NEXT_PUBLIC_MEALDB_BASE_URL;
 
 export interface MealPreview {
   idMeal: string;
@@ -18,9 +18,9 @@ export const MealDBService = {
     const res = await fetch(`${MEALDB_BASE_URL}/search.php?s=${query}`);
     if (!res.ok) throw new Error("Error fetching meals");
     const data: MealDBResponse<any> = await res.json();
-    
+
     if (!data.meals) return [];
-    
+
     // Mapeamos para devolver solo la preview necesaria en listados
     return data.meals.map(meal => ({
       idMeal: meal.idMeal,
