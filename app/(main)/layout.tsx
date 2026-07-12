@@ -9,6 +9,7 @@ import { Refrigerator, Home, Calendar, Bookmark, Settings, Menu } from "lucide-r
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SearchFilterBar } from "@/components/features/SearchFilterBar";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   Sheet,
   SheetContent,
@@ -48,8 +49,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {navLinks.map((link) => {
             const Icon = link.icon;
             const isActive = pathname === link.href;
+            const isProtected = link.href !== "/";
             return (
-              <Link key={link.href} href={link.href}>
+              <Link 
+                key={link.href} 
+                href={link.href}
+                onClick={(e) => {
+                  if (isProtected && !isSignedIn) {
+                    e.preventDefault();
+                    toast.error(`Debes iniciar sesión para acceder a ${link.name}`);
+                  }
+                }}
+              >
                 <span className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"}`}>
                   <Icon className="w-5 h-5" />
                   {link.name}
@@ -97,8 +108,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   {navLinks.map((link) => {
                     const Icon = link.icon;
                     const isActive = pathname === link.href;
+                    const isProtected = link.href !== "/";
                     return (
-                      <Link key={link.href} href={link.href}>
+                      <Link 
+                        key={link.href} 
+                        href={link.href}
+                        onClick={(e) => {
+                          if (isProtected && !isSignedIn) {
+                            e.preventDefault();
+                            toast.error(`Debes iniciar sesión para acceder a ${link.name}`);
+                          }
+                        }}
+                      >
                         <span className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"}`}>
                           <Icon className="w-5 h-5" />
                           {link.name}
