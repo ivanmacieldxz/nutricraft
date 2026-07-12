@@ -5,6 +5,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChefHat } from "lucide-react";
 import { areaToCountryEs } from "@/lib/constants";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface RecipeCardProps {
   recipe: MealPreview;
@@ -27,12 +32,16 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
 
       {/* Content Superimposed */}
       <div className="absolute inset-x-0 bottom-0 p-5 flex flex-col">
-        <h3 
-          className="text-xl font-bold text-white line-clamp-2 leading-tight drop-shadow-md"
-          title={recipe.strMeal}
-        >
-          {recipe.strMeal}
-        </h3>
+        <Tooltip>
+          <TooltipTrigger className="text-left w-full cursor-default">
+            <h3 className="text-xl font-bold text-white line-clamp-2 leading-tight drop-shadow-md">
+              {recipe.strMeal}
+            </h3>
+          </TooltipTrigger>
+          <TooltipContent side="top" sideOffset={10} className="bg-background text-foreground max-w-[280px]">
+            <p className="text-sm font-medium">{recipe.strMeal}</p>
+          </TooltipContent>
+        </Tooltip>
 
         <div className="flex justify-between items-center mt-2">
           <div className="flex items-center text-white/90 text-sm gap-1.5 font-medium drop-shadow-md">
