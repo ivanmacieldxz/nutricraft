@@ -1,0 +1,79 @@
+"use server";
+
+import { MealDBService } from "@/services/mealdb";
+import { translateArray, TranslatedItem } from "@/services/translation";
+
+// Caché en memoria para evitar llamadas a la API de traducción en cada render
+let categoriesCache: TranslatedItem[] | null = null;
+let areasCache: TranslatedItem[] | null = null;
+let ingredientsCache: TranslatedItem[] | null = null;
+
+export async function getTranslatedCategories(): Promise<TranslatedItem[]> {
+  if (categoriesCache) return categoriesCache;
+  const list = await MealDBService.getCategoriesList();
+  categoriesCache = await translateArray(list);
+  return categoriesCache;
+}
+
+const areaToCountryEs: Record<string, string> = {
+  "Afghan": "Afganistán", "Albanian": "Albania", "Algerian": "Argelia", "Andorran": "Andorra", "Angolan": "Angola", 
+  "Antiguan, Barbudan": "Antigua y Barbuda", "Argentine": "Argentina", "Armenian": "Armenia", "Aruban": "Aruba", 
+  "Australian": "Australia", "Austrian": "Austria", "Azerbaijani": "Azerbaiyán", "Bahamian": "Bahamas", 
+  "Bahraini": "Baréin", "Bangladeshi": "Bangladés", "Barbadian": "Barbados", "Belarusian": "Bielorrusia", 
+  "Belgian": "Bélgica", "Belizean": "Belice", "Beninese": "Benín", "Bermudian": "Bermudas", "Bhutanese": "Bután", 
+  "Bolivian": "Bolivia", "Bosnian, Herzegovinian": "Bosnia y Herzegovina", "Motswana": "Botsuana", "Brazilian": "Brasil", 
+  "Bruneian": "Brunéi", "Bulgarian": "Bulgaria", "Burkinabe": "Burkina Faso", "Burundian": "Burundi", 
+  "Cambodian": "Camboya", "Cameroonian": "Camerún", "Canadian": "Canadá", "Cape Verdian": "Cabo Verde", 
+  "Caymanian": "Islas Caimán", "Central African": "República Centroafricana", "Chadian": "Chad", "Chilean": "Chile", 
+  "Chinese": "China", "Colombian": "Colombia", "Costa Rican": "Costa Rica", "Croatian": "Croacia", "Cuban": "Cuba", 
+  "Cypriot": "Chipre", "Czech": "República Checa", "Danish": "Dinamarca", "Djibouti": "Yibuti", "Dominican": "República Dominicana", 
+  "Congolese": "Congo", "Ecuadorean": "Ecuador", "Egyptian": "Egipto", "Salvadoran": "El Salvador", "Equatorial Guinean": "Guinea Ecuatorial", 
+  "Eritrean": "Eritrea", "Estonian": "Estonia", "Ethiopian": "Etiopía", "Faroese": "Islas Feroe", "Fijian": "Fiyi", 
+  "Finnish": "Finlandia", "French": "Francia", "Gabonese": "Gabón", "Gambian": "Gambia", "Georgian": "Georgia", 
+  "German": "Alemania", "Ghanaian": "Ghana", "Gibraltar": "Gibraltar", "Greek": "Grecia", "Greenlandic": "Groenlandia", 
+  "Grenadian": "Granada", "Guadeloupian": "Guadalupe", "Guamanian": "Guam", "Guatemalan": "Guatemala", "Channel Islander": "Islas del Canal", 
+  "Guinean": "Guinea", "Guinea-Bissauan": "Guinea-Bisáu", "Guyanese": "Guyana", "Haitian": "Haití", "Honduran": "Honduras", 
+  "Hong Konger": "Hong Kong", "Hungarian": "Hungría", "Icelander": "Islandia", "Indian": "India", "Indonesian": "Indonesia", 
+  "Iranian": "Irán", "Iraqi": "Irak", "Irish": "Irlanda", "Israeli": "Israel", "Italian": "Italia", "Ivorian": "Costa de Marfil", 
+  "Jamaican": "Jamaica", "Japanese": "Japón", "Jordanian": "Jordania", "Kazakhstani": "Kazajistán", "Kenyan": "Kenia", 
+  "Kosovar": "Kosovo", "Kuwaiti": "Kuwait", "Kirghiz": "Kirguistán", "Laotian": "Laos", "Latvian": "Letonia", 
+  "Lebanese": "Líbano", "Mosotho": "Lesoto", "Liberian": "Liberia", "Libyan": "Libia", "Liechtensteiner": "Liechtenstein", 
+  "Lithuanian": "Lituania", "Luxembourger": "Luxemburgo", "Malagasy": "Madagascar", "Malawian": "Malaui", "Malaysian": "Malasia", 
+  "Maldivan": "Maldivas", "Malian": "Malí", "Maltese": "Malta", "Mauritian": "Mauricio", "Mexican": "México", 
+  "Moldovan": "Moldavia", "Mongolian": "Mongolia", "Montenegrin": "Montenegro", "Moroccan": "Marruecos", "Mozambican": "Mozambique", 
+  "Burmese": "Birmania", "Namibian": "Namibia", "Nepalese": "Nepal", "Dutch": "Países Bajos", "New Zealander": "Nueva Zelanda", 
+  "Nicaraguan": "Nicaragua", "Nigerien": "Níger", "Nigerian": "Nigeria", "North Korean": "Corea del Norte", "Macedonian": "Macedonia", 
+  "Norwegian": "Noruega", "Omani": "Omán", "Pakistani": "Pakistán", "Palestinian": "Palestina", "Panamanian": "Panamá", 
+  "Papua New Guinean": "Papúa Nueva Guinea", "Paraguayan": "Paraguay", "Peruvian": "Perú", "Filipino": "Filipinas", 
+  "Polish": "Polonia", "Portuguese": "Portugal", "Puerto Rican": "Puerto Rico", "Qatari": "Catar", "Romanian": "Rumania", 
+  "Russian": "Rusia", "Rwandan": "Ruanda", "Saint Lucian": "Santa Lucía", "Samoan": "Samoa", "Sammarinese": "San Marino", 
+  "Saudi Arabian": "Arabia Saudita", "Senegalese": "Senegal", "Serbian": "Serbia", "Seychellois": "Seychelles", "Sierra Leonean": "Sierra Leona", 
+  "Singaporean": "Singapur", "Slovak": "Eslovaquia", "Slovene": "Eslovenia", "Solomon Islander": "Islas Salomón", "Somali": "Somalia", 
+  "South African": "Sudáfrica", "South Korean": "Corea del Sur", "South Sudanese": "Sudán del Sur", "Spanish": "España", 
+  "Sri Lankan": "Sri Lanka", "Sudanese": "Sudán", "Surinamer": "Surinam", "Swedish": "Suecia", "Swiss": "Suiza", 
+  "Syrian": "Siria", "Taiwanese": "Taiwán", "Tadzhik": "Tayikistán", "Tanzanian": "Tanzania", "Thai": "Tailandia", 
+  "Togolese": "Togo", "Tongan": "Tonga", "Trinidadian": "Trinidad y Tobago", "Tunisian": "Túnez", "Turkish": "Turquía", 
+  "Turkmen": "Turkmenistán", "Tuvaluan": "Tuvalu", "Ugandan": "Uganda", "Ukrainian": "Ucrania", "Emirati": "Emiratos Árabes Unidos", 
+  "British": "Reino Unido", "American": "Estados Unidos", "Uruguayan": "Uruguay", "Uzbekistani": "Uzbekistán", "Ni-Vanuatu": "Vanuatu", 
+  "Venezuelan": "Venezuela", "Vietnamese": "Vietnam", "Yemeni": "Yemen", "Zambian": "Zambia", "Zimbabwean": "Zimbabue"
+};
+
+export async function getTranslatedAreas(): Promise<TranslatedItem[]> {
+  if (areasCache) return areasCache;
+  const list = await MealDBService.getAreasList();
+  
+  // Usamos el diccionario manual para forzar nombres de países en lugar de gentilicios
+  areasCache = list.map(enArea => ({
+    en: enArea,
+    es: areaToCountryEs[enArea] || enArea
+  })).sort((a, b) => a.es.localeCompare(b.es));
+  
+  return areasCache;
+}
+
+export async function getTranslatedIngredients(): Promise<TranslatedItem[]> {
+  if (ingredientsCache) return ingredientsCache;
+  const list = await MealDBService.getIngredientsList();
+  ingredientsCache = await translateArray(list);
+  return ingredientsCache;
+}

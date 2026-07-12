@@ -6,8 +6,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Search, Filter, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MealDBService } from "@/services/mealdb";
 import { cn } from "@/lib/utils";
+import { getTranslatedCategories, getTranslatedAreas, getTranslatedIngredients } from "@/app/actions/translations";
+import { TranslatedItem } from "@/services/translation";
 
 export function SearchFilterBar() {
   const router = useRouter();
@@ -20,10 +21,10 @@ export function SearchFilterBar() {
   const [inputValue, setInputValue] = useState(currentQuery);
   const [showFilters, setShowFilters] = useState(false);
   
-  // Data lists
-  const [categories, setCategories] = useState<string[]>([]);
-  const [areas, setAreas] = useState<string[]>([]);
-  const [ingredients, setIngredients] = useState<string[]>([]);
+  // Data lists (Translated)
+  const [categories, setCategories] = useState<TranslatedItem[]>([]);
+  const [areas, setAreas] = useState<TranslatedItem[]>([]);
+  const [ingredients, setIngredients] = useState<TranslatedItem[]>([]);
   
   const [selectedType, setSelectedType] = useState(currentType);
   const [selectedValue, setSelectedValue] = useState(currentValue);
@@ -31,9 +32,9 @@ export function SearchFilterBar() {
   const [ingredientSearch, setIngredientSearch] = useState("");
 
   useEffect(() => {
-    MealDBService.getCategoriesList().then(setCategories);
-    MealDBService.getAreasList().then(setAreas);
-    MealDBService.getIngredientsList().then(setIngredients);
+    getTranslatedCategories().then(setCategories);
+    getTranslatedAreas().then(setAreas);
+    getTranslatedIngredients().then(setIngredients);
   }, []);
 
   useEffect(() => {
@@ -62,12 +63,12 @@ export function SearchFilterBar() {
     router.push(`/?${params.toString()}`, { scroll: false });
   };
 
-  const handleFilterSelect = (type: string, value: string) => {
+  const handleFilterSelect = (type: string, valueEn: string) => {
     let newType = type;
-    let newValue = value;
+    let newValue = valueEn;
     
     // Toggle off if clicking the same chip
-    if (selectedType === type && selectedValue === value) {
+    if (selectedType === type && selectedValue === valueEn) {
       newType = "";
       newValue = "";
     }
@@ -88,6 +89,14 @@ export function SearchFilterBar() {
       params.delete("filterValue");
     }
     router.push(`/?${params.toString()}`, { scroll: false });
+  };
+
+  const getTranslatedValue = (type: string, valueEn: string) => {
+    if (!valueEn) return "";
+    if (type === "category") return categories.find(c => c.en === valueEn)?.es || valueEn;
+    if (type === "region") return areas.find(a => a.en === valueEn)?.es || valueEn;
+    if (type === "ingredient") return ingredients.find(i => i.en === valueEn)?.es || valueEn;
+    return valueEn;
   };
 
   return (
@@ -137,16 +146,16 @@ export function SearchFilterBar() {
             <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-primary/20 hover:scrollbar-thumb-primary/40 scrollbar-track-transparent">
               {categories.map(cat => (
                 <button
-                  key={cat}
-                  onClick={() => handleFilterSelect("category", cat)}
+                  key={cat.en}
+                  onClick={() => handleFilterSelect("category", cat.en)}
                   className={cn(
                     "px-4 py-1.5 text-sm rounded-full transition-all border shadow-sm whitespace-nowrap flex-shrink-0",
-                    selectedType === "category" && selectedValue === cat 
+                    selectedType === "category" && selectedValue === cat.en 
                       ? "bg-primary text-primary-foreground border-primary"
                       : "bg-background text-foreground hover:bg-secondary border-border"
                   )}
                 >
-                  {cat}
+                  {cat.es}
                 </button>
               ))}
             </div>
@@ -159,7 +168,7 @@ export function SearchFilterBar() {
             {selectedType === "region" && selectedValue ? (
               <div className="flex items-center gap-2">
                 <div className="px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium shadow-sm flex items-center gap-2">
-                  {selectedValue}
+                  {getTranslatedValue("region", selectedValue)}
                   <button 
                     onClick={() => handleFilterSelect("region", selectedValue)}
                     className="hover:bg-primary-foreground/20 rounded-full p-0.5 transition-colors"
@@ -171,7 +180,7 @@ export function SearchFilterBar() {
             ) : (
               <div className="flex flex-col gap-2">
                 <Input
-                  placeholder="Buscar país (ej. Italian)..."
+                  placeholder="Buscar país (ej. Italia)..."
                   value={areaSearch}
                   onChange={(e) => setAreaSearch(e.target.value)}
                   className="h-11 bg-background rounded-xl border-muted focus-visible:ring-primary shadow-sm"
@@ -180,20 +189,20 @@ export function SearchFilterBar() {
                 {areaSearch.trim() && (
                   <div className="flex flex-wrap gap-2 mt-2 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/20 hover:scrollbar-thumb-primary/40 scrollbar-track-transparent pr-2 pb-1">
                     {areas
-                      .filter(a => a.toLowerCase().includes(areaSearch.toLowerCase()))
+                      .filter(a => a.es.toLowerCase().includes(areaSearch.toLowerCase()))
                       .map(area => (
                         <button
-                          key={area}
+                          key={area.en}
                           onClick={() => {
-                            handleFilterSelect("region", area);
+                            handleFilterSelect("region", area.en);
                             setAreaSearch(""); 
                           }}
                           className="px-3 py-1.5 text-sm rounded-full bg-background text-foreground hover:bg-secondary border transition-all shadow-sm"
                         >
-                          {area}
+                          {area.es}
                         </button>
                       ))}
-                    {areas.filter(a => a.toLowerCase().includes(areaSearch.toLowerCase())).length === 0 && (
+                    {areas.filter(a => a.es.toLowerCase().includes(areaSearch.toLowerCase())).length === 0 && (
                       <span className="text-sm text-muted-foreground px-2">No se encontraron regiones.</span>
                     )}
                   </div>
@@ -206,11 +215,10 @@ export function SearchFilterBar() {
           <div className="flex flex-col gap-3">
             <span className="text-sm font-semibold text-foreground/80">Ingrediente Principal</span>
             
-            {/* Si hay un ingrediente seleccionado, mostrarlo como un chip destacable y opción de borrar */}
             {selectedType === "ingredient" && selectedValue ? (
               <div className="flex items-center gap-2">
                 <div className="px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium shadow-sm flex items-center gap-2">
-                  {selectedValue}
+                  {getTranslatedValue("ingredient", selectedValue)}
                   <button 
                     onClick={() => handleFilterSelect("ingredient", selectedValue)}
                     className="hover:bg-primary-foreground/20 rounded-full p-0.5 transition-colors"
@@ -232,20 +240,20 @@ export function SearchFilterBar() {
                 {ingredientSearch.trim() && (
                   <div className="flex flex-wrap gap-2 mt-2 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/20 hover:scrollbar-thumb-primary/40 scrollbar-track-transparent pr-2 pb-1">
                     {ingredients
-                      .filter(i => i.toLowerCase().includes(ingredientSearch.toLowerCase()))
+                      .filter(i => i.es.toLowerCase().includes(ingredientSearch.toLowerCase()))
                       .map(ingredient => (
                         <button
-                          key={ingredient}
+                          key={ingredient.en}
                           onClick={() => {
-                            handleFilterSelect("ingredient", ingredient);
-                            setIngredientSearch(""); // reset local search
+                            handleFilterSelect("ingredient", ingredient.en);
+                            setIngredientSearch(""); 
                           }}
                           className="px-3 py-1.5 text-sm rounded-full bg-background text-foreground hover:bg-secondary border transition-all shadow-sm"
                         >
-                          {ingredient}
+                          {ingredient.es}
                         </button>
                       ))}
-                    {ingredients.filter(i => i.toLowerCase().includes(ingredientSearch.toLowerCase())).length === 0 && (
+                    {ingredients.filter(i => i.es.toLowerCase().includes(ingredientSearch.toLowerCase())).length === 0 && (
                       <span className="text-sm text-muted-foreground px-2">No hay resultados.</span>
                     )}
                   </div>
