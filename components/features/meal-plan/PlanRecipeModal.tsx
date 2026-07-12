@@ -40,15 +40,17 @@ interface PlanRecipeModalProps {
     strMeal: string;
     strMealThumb: string | null;
   };
+  hasAllergyWarning?: boolean;
 }
 
-export function PlanRecipeModal({ recipe }: PlanRecipeModalProps) {
+export function PlanRecipeModal({ recipe, hasAllergyWarning }: PlanRecipeModalProps) {
   const { isSignedIn } = useUser();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [selectedMeal, setSelectedMeal] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [hasWarnedPlan, setHasWarnedPlan] = useState(false);
 
   const handleOpenClick = (e: React.MouseEvent) => {
     if (!isSignedIn) {
@@ -58,12 +60,7 @@ export function PlanRecipeModal({ recipe }: PlanRecipeModalProps) {
     }
   };
 
-  const handleSave = () => {
-    if (selectedDay === null || !selectedMeal) {
-      toast.error("Seleccioná un día y una comida");
-      return;
-    }
-    
+  const executeSave = () => {
     startTransition(async () => {
       try {
         const weekStartDate = getMonday(new Date()); // Por defecto esta semana
@@ -71,8 +68,8 @@ export function PlanRecipeModal({ recipe }: PlanRecipeModalProps) {
           externalRecipeId: recipe.idMeal,
           title: recipe.strMeal,
           imageUrl: recipe.strMealThumb,
-          dayOfWeek: selectedDay,
-          mealType: selectedMeal,
+          dayOfWeek: selectedDay!,
+          mealType: selectedMeal!,
           weekStartDate,
         });
         toast.success("Agregado al plan semanal");
@@ -82,6 +79,31 @@ export function PlanRecipeModal({ recipe }: PlanRecipeModalProps) {
       }
     });
   };
+
+  const handleSave = () => {
+    if (selectedDay === null || !selectedMeal) {
+      toast.error("Seleccioná un día y una comida");
+      return;
+    }
+    
+    if (hasAllergyWarning && !hasWarnedPlan) {
+      toast.warning("¡Atención! Esta receta contiene alergias para ti.", {
+         description: "Contiene ingredientes que has marcado como rechazados en tu perfil.",
+         action: {
+           label: "Añadir igual",
+           onClick: () => {
+             setHasWarnedPlan(true);
+             executeSave();
+           }
+         },
+         duration: 8000,
+      });
+      return;
+    }
+    
+    executeSave();
+  };
+
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

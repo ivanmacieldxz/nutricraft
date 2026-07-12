@@ -22,11 +22,16 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
   );
   const nutritionData = await getNutritionForRecipe(originalIngredients);
 
+  const { getUserPreferences } = await import("@/app/actions/preferences");
+  const preferences = await getUserPreferences().catch(() => null);
+  const userAllergies = preferences?.allergies || [];
+
   return (
     <RecipeDetailView
       meal={meal}
       translatedData={translatedData}
       nutritionData={nutritionData}
+      userAllergies={userAllergies}
     />
   );
 }
