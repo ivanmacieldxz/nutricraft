@@ -14,6 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChefHat, Bookmark, CalendarPlus, CheckCircle2, PlayCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PlanRecipeModal } from "./meal-plan/PlanRecipeModal";
 
 interface RecipeDetailViewProps {
   meal: MealDetail;
@@ -91,14 +92,7 @@ export function RecipeDetailView({ meal, translatedData, nutritionData }: Recipe
               <Bookmark className="w-5 h-5 mr-2" />
               Guardar
             </Button>
-            <Button
-              size="lg"
-              onClick={() => handleProtectedAction("planificar")}
-              className="rounded-full shadow-lg hover:scale-105 transition-transform"
-            >
-              <CalendarPlus className="w-5 h-5 mr-2" />
-              Planificar
-            </Button>
+            <PlanRecipeModal recipe={{ idMeal: meal.idMeal, strMeal: translatedData.title, strMealThumb: meal.strMealThumb }} />
           </div>
         </div>
       </div>
