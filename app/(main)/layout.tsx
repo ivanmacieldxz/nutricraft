@@ -72,16 +72,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        <div className="p-6 border-t flex items-center justify-between mt-auto">
+        <div className="p-6 border-t flex items-center justify-between mt-auto gap-4">
           {!isLoaded ? (
             <div className="flex items-center gap-3 w-full">
               <Skeleton className="w-7 h-7 rounded-full" />
               <Skeleton className="h-4 w-16" />
             </div>
           ) : isSignedIn ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 w-full">
               <UserButton />
-              <span className="text-sm font-medium">Mi Perfil</span>
+              <span className="text-sm font-medium truncate">Mi Perfil</span>
             </div>
           ) : (
             <Link href="/sign-in" className="w-full">
@@ -90,7 +90,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </Button>
             </Link>
           )}
-          <ThemeToggle />
+          <div className="shrink-0">
+            <ThemeToggle />
+          </div>
         </div>
       </aside>
 
