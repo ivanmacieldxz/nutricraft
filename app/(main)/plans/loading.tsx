@@ -1,6 +1,14 @@
 import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, ShoppingBag } from "lucide-react";
+import { Calendar, ShoppingBag, Utensils } from "lucide-react";
+
+const DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+const MEAL_TYPES = [
+  { id: "breakfast", label: "Desayuno" },
+  { id: "lunch", label: "Almuerzo" },
+  { id: "snack", label: "Merienda" },
+  { id: "dinner", label: "Cena" }
+];
 
 export default function Loading() {
   return (
@@ -31,21 +39,54 @@ export default function Loading() {
           </div>
         </div>
 
-        <div className="xl:mt-8 mt-4">
-          <div className="flex flex-col border rounded-3xl overflow-hidden bg-card shadow-sm">
-            <div className="grid grid-cols-1 xl:grid-cols-7 border-b divide-y xl:divide-y-0 xl:divide-x bg-muted/30">
-              {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((day, i) => (
-                <div key={i} className="p-4 text-center">
-                  <div className="font-semibold text-foreground capitalize">{day}</div>
-                  <Skeleton className="h-6 w-6 rounded-full mx-auto mt-1" />
+        <div className="xl:mt-8 mt-4 w-full pb-4">
+          {/* Mobile Layout (< xl) */}
+          <div className="flex flex-col gap-8 xl:hidden">
+            {DAYS.map((day) => (
+              <div key={day} className="flex flex-col gap-3">
+                <h3 className="font-bold text-xl text-foreground border-b border-border/50 pb-2">{day}</h3>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {MEAL_TYPES.map(meal => (
+                    <div key={meal.id} className="flex flex-col gap-1.5">
+                      <span className="text-xs font-semibold text-muted-foreground uppercase flex items-center">
+                        <Utensils className="w-3 h-3 mr-1 opacity-50" />
+                        {meal.label}
+                      </span>
+                      <div className="h-32">
+                        <Skeleton className="w-full h-full rounded-xl" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Layout (xl+) */}
+          <div className="hidden xl:block w-full overflow-x-auto">
+            <div className="min-w-[800px] grid grid-cols-8 gap-4">
+              {/* Header de la tabla */}
+              <div className="flex items-end pb-4 font-bold text-muted-foreground border-b border-border/50">
+                <div className="text-sm uppercase tracking-wider">Comida</div>
+              </div>
+              {DAYS.map((day) => (
+                <div key={day} className="flex flex-col items-center justify-end pb-4 border-b border-border/50">
+                  <span className="font-bold">{day}</span>
                 </div>
               ))}
-            </div>
-            <div className="grid grid-cols-1 xl:grid-cols-7 divide-y xl:divide-y-0 xl:divide-x">
-              {Array.from({ length: 7 }).map((_, i) => (
-                <div key={i} className="p-4 min-h-[300px] flex flex-col gap-3">
-                  <Skeleton className="w-full h-24 rounded-2xl" />
-                  <Skeleton className="w-full h-24 rounded-2xl" />
+
+              {/* Filas por comida */}
+              {MEAL_TYPES.map(meal => (
+                <div key={meal.id} className="col-span-8 grid grid-cols-8 gap-4 py-2 group">
+                  <div className="flex items-center text-sm font-semibold text-foreground/80 py-2">
+                    <Utensils className="w-4 h-4 mr-2 opacity-50" />
+                    {meal.label}
+                  </div>
+                  {DAYS.map((_, dayIdx) => (
+                    <div key={dayIdx} className="h-32">
+                      <Skeleton className="w-full h-full rounded-xl" />
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>
