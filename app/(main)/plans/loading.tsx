@@ -11,6 +11,14 @@ const MEAL_TYPES = [
 ];
 
 export default function Loading() {
+  // Calculamos la semana actual para mostrarla directamente sin skeleton
+  const date = new Date();
+  const day = date.getDay();
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+  date.setDate(diff);
+  date.setHours(0, 0, 0, 0);
+  const weekStartDate = date;
+
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col xl:gap-6 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -23,17 +31,17 @@ export default function Loading() {
 
         <div className="text-sm font-medium bg-secondary text-secondary-foreground px-4 py-2 rounded-xl border flex items-center shadow-sm">
           <Calendar className="w-4 h-4 mr-2" />
-          <Skeleton className="h-4 w-32" />
+          Semana del {weekStartDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
         </div>
       </div>
 
       <div className="w-full mt-4">
-        <div className="grid w-full grid-cols-2 max-w-md mx-auto bg-secondary/70 rounded-lg p-1">
-          <div className="rounded-lg bg-background shadow-sm text-foreground flex items-center justify-center py-2 text-sm font-medium">
+        <div className="grid w-full grid-cols-2 max-w-md mx-auto bg-secondary/70 rounded-lg p-1 h-10 items-center justify-center text-muted-foreground">
+          <div className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-all bg-background text-foreground shadow-sm">
             <Calendar className="w-4 h-4 mr-2" />
             Plan Semanal
           </div>
-          <div className="rounded-lg text-muted-foreground flex items-center justify-center py-2 text-sm font-medium opacity-50">
+          <div className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-all opacity-50">
             <ShoppingBag className="w-4 h-4 mr-2" />
             Lista de Compras
           </div>
