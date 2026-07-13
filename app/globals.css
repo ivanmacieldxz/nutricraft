@@ -54,23 +54,23 @@
 
 :root {
   /* Pastel Light Theme - Pink Tinted */
-  --background: 354 40% 98%;     /* Soft Pink Off-White */
-  --foreground: 354 20% 15%;     /* Dark Pinkish Gray */
+  --background: 354 60% 96%;     /* Noticeable pale pink */
+  --foreground: 354 30% 20%;     /* Dark Pinkish Gray */
   
-  --card: 354 30% 99%;
-  --card-foreground: 354 20% 15%;
+  --card: 354 40% 98%;
+  --card-foreground: 354 30% 20%;
   
-  --popover: 354 30% 99%;
-  --popover-foreground: 354 20% 15%;
+  --popover: 354 40% 98%;
+  --popover-foreground: 354 30% 20%;
   
   --primary: 354 70% 85%;        /* Pastel Pink */
   --primary-foreground: 0 0% 10%;
   
-  --secondary: 354 30% 94%;      /* Very Light Pink */
-  --secondary-foreground: 354 20% 15%;
+  --secondary: 133 60% 85%;      /* Pastel Mint (Restored) */
+  --secondary-foreground: 0 0% 10%;
   
-  --muted: 354 30% 95%;
-  --muted-foreground: 354 10% 45%;
+  --muted: 354 40% 92%;          /* Slightly darker pink */
+  --muted-foreground: 354 20% 45%;
   
   --accent: 354 70% 85%;
   --accent-foreground: 0 0% 10%;
