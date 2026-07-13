@@ -85,8 +85,7 @@
   --radius: 1rem;                /* Softer rounded corners */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
+.dark {
     /* Pastel Dark Theme */
     --background: 240 10% 12%;   /* Dark Gray */
     --foreground: 0 0% 95%;      /* Off-White */
@@ -115,7 +114,6 @@
     --border: 240 10% 25%;
     --input: 240 10% 25%;
     --ring: 354 40% 70%;
-  }
 }
 
 @layer base {
