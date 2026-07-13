@@ -23,6 +23,10 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport = {
+  themeColor: "#4caf50",
+};
+
 import { ClerkProvider } from '@clerk/nextjs';
 import { esES } from '@clerk/localizations';
 import { ThemeProvider } from "@/components/theme-provider";
@@ -41,7 +45,7 @@ export default function RootLayout({
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
-        <body className="min-h-full flex flex-col bg-background text-foreground transition-colors duration-300">
+        <body className="min-h-full flex flex-col text-foreground transition-colors duration-300">
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
