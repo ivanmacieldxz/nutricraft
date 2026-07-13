@@ -51,8 +51,8 @@ export default function Loading() {
                         <Utensils className="w-3 h-3 mr-1 opacity-50" />
                         {meal.label}
                       </span>
-                      <div className="h-32">
-                        <Skeleton className="w-full h-full rounded-xl" />
+                      <div className="h-32 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm shadow-sm overflow-hidden p-0">
+                        <Skeleton className="w-full h-full" />
                       </div>
                     </div>
                   ))}
@@ -82,8 +82,8 @@ export default function Loading() {
                     {meal.label}
                   </div>
                   {DAYS.map((_, dayIdx) => (
-                    <div key={dayIdx} className="h-32">
-                      <Skeleton className="w-full h-full rounded-xl" />
+                    <div key={dayIdx} className="h-32 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm shadow-sm overflow-hidden p-0">
+                      <Skeleton className="w-full h-full" />
                     </div>
                   ))}
                 </div>
@@ -93,6 +93,7 @@ export default function Loading() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

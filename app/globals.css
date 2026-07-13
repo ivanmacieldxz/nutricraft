@@ -53,36 +53,36 @@
 }
 
 :root {
-  /* Pastel Light Theme - Pink Tinted */
-  --background: 354 60% 96%;     /* Noticeable pale pink */
+  /* Light Theme - Pink Tinted */
+  --background: 354 70% 98%;     /* Rosa como el del color principal pero más claro */
   --foreground: 354 30% 20%;     /* Dark Pinkish Gray */
   
-  --card: 354 40% 98%;
+  --card: 354 40% 99%;
   --card-foreground: 354 30% 20%;
   
-  --popover: 354 40% 98%;
+  --popover: 354 40% 99%;
   --popover-foreground: 354 30% 20%;
   
-  --primary: 354 70% 85%;        /* Pastel Pink */
-  --primary-foreground: 0 0% 10%;
+  --primary: 354 70% 45%;        /* Strong Pink for contrast */
+  --primary-foreground: 0 0% 98%; /* White text */
   
-  --secondary: 133 60% 85%;      /* Pastel Mint (Restored) */
-  --secondary-foreground: 0 0% 10%;
+  --secondary: 133 40% 45%;      /* Strong Mint */
+  --secondary-foreground: 0 0% 98%; /* White text */
   
-  --muted: 354 40% 92%;          /* Slightly darker pink */
+  --muted: 354 40% 92%;
   --muted-foreground: 354 20% 45%;
   
-  --accent: 354 70% 85%;
-  --accent-foreground: 0 0% 10%;
+  --accent: 354 70% 45%;
+  --accent-foreground: 0 0% 98%;
   
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 98%;
   
-  --border: 354 20% 90%;
-  --input: 354 20% 90%;
-  --ring: 354 70% 85%;
+  --border: 354 30% 85%;
+  --input: 354 30% 85%;
+  --ring: 354 70% 45%;
   
-  --radius: 1rem;                /* Softer rounded corners */
+  --radius: 1rem;
 }
 
 .dark {

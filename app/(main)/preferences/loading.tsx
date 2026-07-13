@@ -12,7 +12,7 @@ export default function Loading() {
       </div>
 
       <div className="space-y-8">
-        <div className="bg-card border rounded-2xl p-6 shadow-sm space-y-6">
+        <div className="bg-card/50 backdrop-blur-xl border rounded-2xl p-6 shadow-sm space-y-6">
           <Skeleton className="h-6 w-48 mb-4" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -24,7 +24,7 @@ export default function Loading() {
           </div>
         </div>
 
-        <div className="bg-card border rounded-2xl p-6 shadow-sm space-y-6">
+        <div className="bg-card/50 backdrop-blur-xl border rounded-2xl p-6 shadow-sm space-y-6">
           <Skeleton className="h-6 w-48 mb-4" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
