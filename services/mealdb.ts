@@ -128,27 +128,42 @@ export const MealDBService = {
     return (data.meals || []).map(m => ({ ...m, strArea: area }));
   },
 
-  /**
-   * Obtiene recetas aleatorias reales consultando random.php en paralelo
-   */
   async getTrulyRandomMeals(count: number = 12): Promise<MealPreview[]> {
-    const promises = Array.from({ length: count }).map(() =>
-      fetch(`${MEALDB_BASE_URL}/random.php`).then((r) => r.json())
-    );
-    const results = await Promise.all(promises);
-    return results
-      .map((res) => {
-        const meal = res.meals?.[0];
-        if (!meal) return null;
-        return {
-          idMeal: meal.idMeal,
-          strMeal: meal.strMeal,
-          strMealThumb: meal.strMealThumb,
-          strArea: meal.strArea,
-          strCategory: meal.strCategory,
-        };
-      })
-      .filter(Boolean) as MealPreview[];
+    const letters = 'abcdefghijklmnoprstvwxy'; // exclude q, u, z to avoid empty results typically
+    let results: MealPreview[] = [];
+    
+    // Try up to 3 times to get enough meals
+    for (let i = 0; i < 3; i++) {
+      if (results.length >= count) break;
+      const randomLetter = letters[Math.floor(Math.random() * letters.length)];
+      try {
+        const res = await fetch(`${MEALDB_BASE_URL}/search.php?f=${randomLetter}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.meals) {
+            const newMeals = data.meals.map((meal: any) => ({
+              idMeal: meal.idMeal,
+              strMeal: meal.strMeal,
+              strMealThumb: meal.strMealThumb,
+              strArea: meal.strArea,
+              strCategory: meal.strCategory,
+            }));
+            
+            // Add unique meals
+            const existingIds = new Set(results.map(r => r.idMeal));
+            const uniqueNewMeals = newMeals.filter((m: MealPreview) => !existingIds.has(m.idMeal));
+            results = [...results, ...uniqueNewMeals];
+          }
+        }
+      } catch (e) {
+        console.error("Error fetching random meals:", e);
+      }
+    }
+    
+    // Shuffle the results
+    results.sort(() => 0.5 - Math.random());
+    
+    return results.slice(0, count);
   },
 
   /**
