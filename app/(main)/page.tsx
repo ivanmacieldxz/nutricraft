@@ -8,6 +8,7 @@ import { RecipeCard } from "@/components/features/RecipeCard";
 import { translateToEnglish } from "@/app/actions/translations";
 import { getUserPreferences } from "@/app/actions/preferences";
 import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -281,8 +282,16 @@ function HomeContent() {
       </div>
       
       {loading ? (
-        <div className="flex justify-center items-center py-32">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div key={i} className="flex flex-col gap-3">
+              <Skeleton className="w-full aspect-[4/3] rounded-2xl" />
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : displayedRecipes.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-32 bg-muted/30 rounded-3xl border border-dashed gap-4">
@@ -326,8 +335,21 @@ function HomeContent() {
 export default function Home() {
   return (
     <Suspense fallback={
-      <div className="flex justify-center items-center py-32 w-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col gap-6">
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-9 w-64" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div key={i} className="flex flex-col gap-3">
+              <Skeleton className="w-full aspect-[4/3] rounded-2xl" />
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     }>
       <HomeContent />
