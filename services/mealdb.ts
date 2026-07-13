@@ -129,38 +129,40 @@ export const MealDBService = {
   },
 
   async getTrulyRandomMeals(count: number = 12): Promise<MealPreview[]> {
-    const letters = 'abcdefghijklmnoprstvwxy'; // exclude q, u, z to avoid empty results typically
-    let results: MealPreview[] = [];
-    
-    // Try up to 3 times to get enough meals
-    for (let i = 0; i < 3; i++) {
-      if (results.length >= count) break;
-      const randomLetter = letters[Math.floor(Math.random() * letters.length)];
+    const letters = 'abcdefghijklmnoprstvwxy';
+    // Pick 4 unique random letters
+    const chosenLetters = new Set<string>();
+    while (chosenLetters.size < 4) {
+      chosenLetters.add(letters[Math.floor(Math.random() * letters.length)]);
+    }
+
+    const fetchLetter = async (letter: string) => {
       try {
-        const res = await fetch(`${MEALDB_BASE_URL}/search.php?f=${randomLetter}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.meals) {
-            const newMeals = data.meals.map((meal: any) => ({
-              idMeal: meal.idMeal,
-              strMeal: meal.strMeal,
-              strMealThumb: meal.strMealThumb,
-              strArea: meal.strArea,
-              strCategory: meal.strCategory,
-            }));
-            
-            // Add unique meals
-            const existingIds = new Set(results.map(r => r.idMeal));
-            const uniqueNewMeals = newMeals.filter((m: MealPreview) => !existingIds.has(m.idMeal));
-            results = [...results, ...uniqueNewMeals];
-          }
-        }
-      } catch (e) {
-        console.error("Error fetching random meals:", e);
+        const res = await fetch(`${MEALDB_BASE_URL}/search.php?f=${letter}`);
+        if (!res.ok) return [];
+        const data = await res.json();
+        return (data.meals || []).map((meal: any) => ({
+          idMeal: meal.idMeal,
+          strMeal: meal.strMeal,
+          strMealThumb: meal.strMealThumb,
+          strArea: meal.strArea,
+          strCategory: meal.strCategory,
+        }));
+      } catch {
+        return [];
       }
+    };
+
+    const resultsArray = await Promise.all(Array.from(chosenLetters).map(fetchLetter));
+    const allFetchedMeals = resultsArray.flat();
+    
+    // Deduplicate perfectly across all 4 letters
+    const uniqueMap = new Map<string, MealPreview>();
+    for (const meal of allFetchedMeals) {
+      uniqueMap.set(meal.idMeal, meal);
     }
     
-    // Shuffle the results
+    const results = Array.from(uniqueMap.values());
     results.sort(() => 0.5 - Math.random());
     
     return results.slice(0, count);
