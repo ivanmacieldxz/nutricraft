@@ -157,8 +157,8 @@ export function NutritionDashboardView({ stats, preferences }: Props) {
                   ))}
                 </Pie>
                 <Tooltip 
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                  itemStyle={{ color: 'var(--foreground)' }}
+                  contentStyle={{ borderRadius: '12px', border: '1px solid hsl(var(--border))', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', backgroundColor: 'hsl(var(--card))', color: 'hsl(var(--card-foreground))' }}
+                  itemStyle={{ color: 'hsl(var(--card-foreground))' }}
                   formatter={(value: any) => [`${Math.round(value as number)}g`, undefined]}
                 />
               </PieChart>
