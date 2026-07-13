@@ -20,7 +20,7 @@ export default async function SavedPage() {
       </div>
 
       <Tabs defaultValue="saved" className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-2 mb-8 bg-card border shadow-sm">
+        <TabsList className="grid w-full max-w-md grid-cols-2 mb-8 bg-card/50 backdrop-blur-xl border shadow-sm">
           <TabsTrigger value="saved" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             <Bookmark className="w-4 h-4 mr-2" />
             Guardadas ({savedRecipes.length})

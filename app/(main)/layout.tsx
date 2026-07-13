@@ -30,7 +30,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen">
 
       {/* Desktop Sidebar (md and up) */}
       <aside className="hidden md:flex flex-col w-72 fixed inset-y-0 left-0 border-r bg-card/50 backdrop-blur-xl z-50">

@@ -25,15 +25,9 @@ export default function Loading() {
       </div>
 
       <div className="w-full mt-4">
-        <div className="inline-flex items-center justify-center rounded-md bg-muted p-1 text-muted-foreground grid w-full max-w-md grid-cols-2 mx-auto mb-8 bg-card border shadow-sm">
-          <div className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-primary text-primary-foreground">
-            <Calendar className="w-4 h-4 mr-2" />
-            Plan Semanal
-          </div>
-          <div className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium opacity-50">
-            <ShoppingBag className="w-4 h-4 mr-2" />
-            Lista de Compras
-          </div>
+        <div className="grid w-full max-w-md grid-cols-2 mx-auto mb-8 bg-card/50 backdrop-blur-xl border shadow-sm p-1 rounded-lg">
+          <Skeleton className="h-8 w-full rounded-md" />
+          <Skeleton className="h-8 w-full rounded-md" />
         </div>
 
         <div className="xl:mt-8">

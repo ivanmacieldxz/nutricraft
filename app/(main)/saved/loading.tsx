@@ -13,7 +13,7 @@ export default function Loading() {
       </div>
 
       <div className="w-full">
-        <div className="grid w-full max-w-md grid-cols-2 mb-8 bg-card border shadow-sm p-1 rounded-lg">
+        <div className="grid w-full max-w-md grid-cols-2 mb-8 bg-card/50 backdrop-blur-xl border shadow-sm p-1 rounded-lg">
           <Skeleton className="h-8 w-full rounded-md" />
           <Skeleton className="h-8 w-full rounded-md" />
         </div>
