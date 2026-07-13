@@ -14,15 +14,16 @@ export default function Loading() {
         <Skeleton className="h-10 w-48 rounded-xl" />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-28 w-full rounded-2xl" />
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
-        <Skeleton className="h-[400px] w-full rounded-3xl" />
-        <Skeleton className="h-[400px] w-full rounded-3xl" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1 bg-card/50 border rounded-2xl p-6 h-[400px]">
+          <Skeleton className="w-full h-full rounded-xl" />
+        </div>
+        <div className="lg:col-span-1 bg-card/50 border rounded-2xl p-6 h-[400px]">
+          <Skeleton className="w-full h-full rounded-xl" />
+        </div>
+        <div className="lg:col-span-3 bg-card/50 border rounded-2xl p-6 h-[350px]">
+          <Skeleton className="w-full h-full rounded-xl" />
+        </div>
       </div>
     </div>
   );
