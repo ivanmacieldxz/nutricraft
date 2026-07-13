@@ -30,7 +30,7 @@ export default function Loading() {
           <Skeleton className="h-8 w-full rounded-md" />
         </div>
 
-        <div className="w-full pb-4">
+        <div className="w-full xl:mt-8 pb-4">
           {/* Mobile Layout (< xl) */}
           <div className="flex flex-col gap-8 xl:hidden">
             {DAYS.map((day) => (
