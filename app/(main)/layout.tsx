@@ -15,6 +15,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const navLinks = [
   { name: "Inicio", href: "/", icon: Home },
@@ -25,7 +26,7 @@ const navLinks = [
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { isSignedIn } = useUser();
+  const { isSignedIn, isLoaded } = useUser();
   const pathname = usePathname();
 
   return (
@@ -72,7 +73,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </nav>
 
         <div className="p-6 border-t flex items-center justify-between mt-auto">
-          {isSignedIn ? (
+          {!isLoaded ? (
+            <div className="flex items-center gap-3 w-full">
+              <Skeleton className="w-7 h-7 rounded-full" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+          ) : isSignedIn ? (
             <div className="flex items-center gap-3">
               <UserButton />
               <span className="text-sm font-medium">Mi Perfil</span>
@@ -140,7 +146,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            {isSignedIn ? (
+            {!isLoaded ? (
+              <Skeleton className="w-8 h-8 rounded-full" />
+            ) : isSignedIn ? (
               <UserButton />
             ) : (
               <Link href="/sign-in">
