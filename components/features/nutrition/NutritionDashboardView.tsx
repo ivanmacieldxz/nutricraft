@@ -67,7 +67,8 @@ export function NutritionDashboardView({ stats, preferences }: Props) {
       case "Buen Camino": return "text-blue-500 bg-blue-500/10 border-blue-500/20";
       case "Necesita Ajuste": return "text-amber-500 bg-amber-500/10 border-amber-500/20";
       case "Revisar Dieta": return "text-red-500 bg-red-500/10 border-red-500/20";
-      default: return "text-muted-foreground bg-secondary border-border";
+      case "Sin datos": return "text-foreground bg-muted border-muted-foreground/20";
+      default: return "text-foreground bg-muted border-muted-foreground/20";
     }
   };
 
