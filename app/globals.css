@@ -53,24 +53,24 @@
 }
 
 :root {
-  /* Pastel Light Theme */
-  --background: 40 33% 98%;      /* Creamy Off-White */
-  --foreground: 240 10% 15%;     /* Soft Dark */
+  /* Pastel Light Theme - Pink Tinted */
+  --background: 354 40% 98%;     /* Soft Pink Off-White */
+  --foreground: 354 20% 15%;     /* Dark Pinkish Gray */
   
-  --card: 0 0% 100%;
-  --card-foreground: 240 10% 15%;
+  --card: 354 30% 99%;
+  --card-foreground: 354 20% 15%;
   
-  --popover: 0 0% 100%;
-  --popover-foreground: 240 10% 15%;
+  --popover: 354 30% 99%;
+  --popover-foreground: 354 20% 15%;
   
   --primary: 354 70% 85%;        /* Pastel Pink */
   --primary-foreground: 0 0% 10%;
   
-  --secondary: 133 60% 85%;      /* Pastel Mint */
-  --secondary-foreground: 0 0% 10%;
+  --secondary: 354 30% 94%;      /* Very Light Pink */
+  --secondary-foreground: 354 20% 15%;
   
-  --muted: 240 10% 95%;
-  --muted-foreground: 240 5% 45%;
+  --muted: 354 30% 95%;
+  --muted-foreground: 354 10% 45%;
   
   --accent: 354 70% 85%;
   --accent-foreground: 0 0% 10%;
@@ -78,8 +78,8 @@
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 98%;
   
-  --border: 240 5.9% 90%;
-  --input: 240 5.9% 90%;
+  --border: 354 20% 90%;
+  --input: 354 20% 90%;
   --ring: 354 70% 85%;
   
   --radius: 1rem;                /* Softer rounded corners */
