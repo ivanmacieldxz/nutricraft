@@ -51,12 +51,12 @@ export default async function PlansPage(props: {
       </div>
 
       <Tabs defaultValue="planner" className="w-full mt-4">
-        <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto bg-secondary/70 rounded-lg">
-          <TabsTrigger value="planner" className="rounded-lg data-[active]:bg-background data-[active]:shadow-sm data-[active]:text-foreground text-muted-foreground transition-all p-1">
+        <TabsList className="grid w-full max-w-md grid-cols-2 mx-auto mb-8 bg-card border shadow-sm">
+          <TabsTrigger value="planner" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all">
             <Calendar className="w-4 h-4 mr-2" />
             Plan Semanal
           </TabsTrigger>
-          <TabsTrigger value="shopping" className="rounded-lg data-[active]:bg-background data-[active]:shadow-sm data-[active]:text-foreground text-muted-foreground transition-all">
+          <TabsTrigger value="shopping" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all">
             <ShoppingBag className="w-4 h-4 mr-2" />
             Lista de Compras
           </TabsTrigger>
