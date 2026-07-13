@@ -51,23 +51,24 @@ export function NutritionDashboardView({ stats, preferences }: Props) {
 
   // Calculate generic Nutri-Score (mock logic based on meeting goals)
   const nutriScore = useMemo(() => {
-    if (stats.totalCalories === 0) return "N/A";
+    if (stats.totalCalories === 0) return "Sin datos";
     const calorieRatio = stats.totalCalories / (weeklyGoals.calories || 1);
     const proteinRatio = stats.totalProtein / (weeklyGoals.protein || 1);
     
-    if (calorieRatio > 0.8 && calorieRatio < 1.2 && proteinRatio > 0.8) return "A";
-    if (calorieRatio > 0.7 && calorieRatio < 1.3) return "B";
-    if (calorieRatio > 0.5 && calorieRatio < 1.5) return "C";
-    return "D";
+    if (calorieRatio > 0.8 && calorieRatio < 1.2 && proteinRatio > 0.8) return "Excelente";
+    if (calorieRatio > 0.7 && calorieRatio < 1.3) return "Buen Camino";
+    if (calorieRatio > 0.5 && calorieRatio < 1.5) return "Necesita Ajuste";
+    return "Revisar Dieta";
   }, [stats, weeklyGoals]);
 
   const getScoreColor = (score: string) => {
     switch (score) {
-      case "A": return "text-emerald-500 bg-emerald-500/10 border-emerald-500/20";
-      case "B": return "text-blue-500 bg-blue-500/10 border-blue-500/20";
-      case "C": return "text-amber-500 bg-amber-500/10 border-amber-500/20";
-      case "D": return "text-red-500 bg-red-500/10 border-red-500/20";
-      default: return "text-muted-foreground bg-secondary border-border";
+      case "Excelente": return "text-emerald-500 bg-emerald-500/10 border-emerald-500/20";
+      case "Buen Camino": return "text-blue-500 bg-blue-500/10 border-blue-500/20";
+      case "Necesita Ajuste": return "text-amber-500 bg-amber-500/10 border-amber-500/20";
+      case "Revisar Dieta": return "text-red-500 bg-red-500/10 border-red-500/20";
+      case "Sin datos": return "text-foreground bg-muted border-muted-foreground/20";
+      default: return "text-foreground bg-muted border-muted-foreground/20";
     }
   };
 
@@ -95,7 +96,7 @@ export function NutritionDashboardView({ stats, preferences }: Props) {
       <div className="lg:col-span-1 bg-card/50 backdrop-blur-xl border rounded-2xl p-6 shadow-sm flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-lg">Resumen Semanal</h3>
-          <div className={`px-4 py-1.5 rounded-full border font-bold text-xl ${getScoreColor(nutriScore)}`}>
+          <div className={`px-4 py-1.5 rounded-full border font-bold text-sm ${getScoreColor(nutriScore)}`}>
             {nutriScore}
           </div>
         </div>
@@ -157,8 +158,8 @@ export function NutritionDashboardView({ stats, preferences }: Props) {
                   ))}
                 </Pie>
                 <Tooltip 
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                  itemStyle={{ color: 'var(--foreground)' }}
+                  contentStyle={{ borderRadius: '12px', border: '1px solid hsl(var(--border))', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', backgroundColor: 'hsl(var(--card))', color: 'hsl(var(--card-foreground))' }}
+                  itemStyle={{ color: 'hsl(var(--card-foreground))' }}
                   formatter={(value: any) => [`${Math.round(value as number)}g`, undefined]}
                 />
               </PieChart>

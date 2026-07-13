@@ -15,6 +15,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const navLinks = [
   { name: "Inicio", href: "/", icon: Home },
@@ -25,11 +26,11 @@ const navLinks = [
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { isSignedIn } = useUser();
+  const { isSignedIn, isLoaded } = useUser();
   const pathname = usePathname();
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen">
 
       {/* Desktop Sidebar (md and up) */}
       <aside className="hidden md:flex flex-col w-72 fixed inset-y-0 left-0 border-r bg-card/50 backdrop-blur-xl z-50">
@@ -71,11 +72,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        <div className="p-6 border-t flex items-center justify-between mt-auto">
-          {isSignedIn ? (
-            <div className="flex items-center gap-3">
+        <div className="p-6 border-t flex items-center justify-between mt-auto gap-4">
+          {!isLoaded ? (
+            <div className="flex items-center gap-3 w-full">
+              <Skeleton className="w-7 h-7 rounded-full" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+          ) : isSignedIn ? (
+            <div className="flex items-center gap-3 w-full">
               <UserButton />
-              <span className="text-sm font-medium">Mi Perfil</span>
+              <span className="text-sm font-medium truncate">Mi Perfil</span>
             </div>
           ) : (
             <Link href="/sign-in" className="w-full">
@@ -84,7 +90,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </Button>
             </Link>
           )}
-          <ThemeToggle />
+          <div className="shrink-0">
+            <ThemeToggle />
+          </div>
         </div>
       </aside>
 
@@ -140,7 +148,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            {isSignedIn ? (
+            {!isLoaded ? (
+              <Skeleton className="w-8 h-8 rounded-full" />
+            ) : isSignedIn ? (
               <UserButton />
             ) : (
               <Link href="/sign-in">

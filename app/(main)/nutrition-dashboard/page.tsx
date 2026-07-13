@@ -63,7 +63,7 @@ export default async function NutritionDashboardPage(props: {
           </p>
         </div>
 
-        <div className="text-sm font-medium bg-secondary text-secondary-foreground px-4 py-2 rounded-xl border flex items-center shadow-sm">
+        <div className="text-sm font-medium bg-secondary/50 backdrop-blur-xl text-secondary-foreground px-4 py-2 rounded-xl border border-secondary/20 flex items-center shadow-sm">
           Semana del {weekStartDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
         </div>
       </div>
