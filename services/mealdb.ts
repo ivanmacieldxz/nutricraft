@@ -128,34 +128,51 @@ export const MealDBService = {
     return (data.meals || []).map(m => ({ ...m, strArea: area }));
   },
 
-  /**
-   * Obtiene recetas aleatorias reales consultando random.php en paralelo
-   */
   async getTrulyRandomMeals(count: number = 12): Promise<MealPreview[]> {
-    const promises = Array.from({ length: count }).map(() =>
-      fetch(`${MEALDB_BASE_URL}/random.php`).then((r) => r.json())
-    );
-    const results = await Promise.all(promises);
-    return results
-      .map((res) => {
-        const meal = res.meals?.[0];
-        if (!meal) return null;
-        return {
+    const letters = 'abcdefghijklmnoprstvwxy';
+    // Pick 4 unique random letters
+    const chosenLetters = new Set<string>();
+    while (chosenLetters.size < 4) {
+      chosenLetters.add(letters[Math.floor(Math.random() * letters.length)]);
+    }
+
+    const fetchLetter = async (letter: string) => {
+      try {
+        const res = await fetch(`${MEALDB_BASE_URL}/search.php?f=${letter}`);
+        if (!res.ok) return [];
+        const data = await res.json();
+        return (data.meals || []).map((meal: any) => ({
           idMeal: meal.idMeal,
           strMeal: meal.strMeal,
           strMealThumb: meal.strMealThumb,
           strArea: meal.strArea,
           strCategory: meal.strCategory,
-        };
-      })
-      .filter(Boolean) as MealPreview[];
+        }));
+      } catch {
+        return [];
+      }
+    };
+
+    const resultsArray = await Promise.all(Array.from(chosenLetters).map(fetchLetter));
+    const allFetchedMeals = resultsArray.flat();
+    
+    // Deduplicate perfectly across all 4 letters
+    const uniqueMap = new Map<string, MealPreview>();
+    for (const meal of allFetchedMeals) {
+      uniqueMap.set(meal.idMeal, meal);
+    }
+    
+    const results = Array.from(uniqueMap.values());
+    results.sort(() => 0.5 - Math.random());
+    
+    return results.slice(0, count);
   },
 
   /**
    * Obtiene la lista de todas las categorías disponibles
    */
   async getCategoriesList(): Promise<string[]> {
-    const res = await fetch(`${MEALDB_BASE_URL}/list.php?c=list`);
+    const res = await fetch(`${MEALDB_BASE_URL}/list.php?c=list`, { next: { revalidate: 86400 } });
     if (!res.ok) return [];
     const data = await res.json();
     const list = (data.meals || []).map((m: any) => (m.strCategory || "").trim()).filter(Boolean);
@@ -166,7 +183,7 @@ export const MealDBService = {
    * Obtiene la lista de todas las regiones/países disponibles
    */
   async getAreasList(): Promise<string[]> {
-    const res = await fetch(`${MEALDB_BASE_URL}/list.php?a=list`);
+    const res = await fetch(`${MEALDB_BASE_URL}/list.php?a=list`, { next: { revalidate: 86400 } });
     if (!res.ok) return [];
     const data = await res.json();
     const list = (data.meals || []).map((m: any) => (m.strArea || "").trim()).filter(Boolean);
@@ -177,7 +194,7 @@ export const MealDBService = {
    * Obtiene la lista de todos los ingredientes principales
    */
   async getIngredientsList(): Promise<string[]> {
-    const res = await fetch(`${MEALDB_BASE_URL}/list.php?i=list`);
+    const res = await fetch(`${MEALDB_BASE_URL}/list.php?i=list`, { next: { revalidate: 86400 } });
     if (!res.ok) return [];
     const data = await res.json();
     const list = (data.meals || []).map((m: any) => (m.strIngredient || "").trim()).filter(Boolean);

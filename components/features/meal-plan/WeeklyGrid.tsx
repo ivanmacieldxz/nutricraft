@@ -121,7 +121,7 @@ export function WeeklyGrid({ plan, weekStartDate }: WeeklyGridProps) {
           </div>
           {DAYS.map((day, idx) => (
             <div key={day} className="flex flex-col items-center justify-end pb-4 border-b border-border/50">
-              <span className="font-bold">{day}</span>
+              <span className="font-bold text-sm text-foreground/80">{day}</span>
             </div>
           ))}
 
