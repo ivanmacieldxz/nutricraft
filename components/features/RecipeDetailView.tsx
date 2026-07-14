@@ -129,6 +129,7 @@ export function RecipeDetailView({ meal, translatedData, nutritionData, userAlle
 
           <div className="flex items-center gap-3">
             <Button
+              type="button"
               variant={isSaved ? "default" : "secondary"}
               size="lg"
               disabled={isSaving}

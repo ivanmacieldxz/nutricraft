@@ -29,7 +29,7 @@ export async function toggleSavedRecipe(externalRecipeId: string, title: string,
       },
     });
     revalidatePath("/saved");
-    revalidatePath("/recipes/[id]");
+    revalidatePath(`/recipes/${externalRecipeId}`);
     return { saved: false };
   } else {
     await prisma.savedRecipe.create({
@@ -41,7 +41,7 @@ export async function toggleSavedRecipe(externalRecipeId: string, title: string,
       },
     });
     revalidatePath("/saved");
-    revalidatePath("/recipes/[id]");
+    revalidatePath(`/recipes/${externalRecipeId}`);
     return { saved: true };
   }
 }
