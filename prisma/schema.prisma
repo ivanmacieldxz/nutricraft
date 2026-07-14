@@ -92,3 +92,14 @@ model RecipeHistory {
 
   @@unique([userId, externalRecipeId])
 }
+
+model RecipeNutritionCache {
+  id               String   @id @default(uuid())
+  externalRecipeId String   @unique
+  calories         Float
+  totalProtein     Float
+  totalCarbs       Float
+  totalFat         Float
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
