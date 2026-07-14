@@ -8,11 +8,12 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 function getMonday(d: Date) {
-  const date = new Date(d);
-  const day = date.getDay();
-  const diff = date.getDate() - day + (day === 0 ? -6 : 1); // ajustar si es domingo
-  date.setDate(diff);
-  date.setHours(0, 0, 0, 0);
+  // Operar estrictamente en UTC para evitar desfasajes entre Cliente y Servidor
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = date.getUTCDay();
+  const diff = date.getUTCDate() - day + (day === 0 ? -6 : 1); // ajustar si es domingo
+  date.setUTCDate(diff);
+  date.setUTCHours(0, 0, 0, 0);
   return date;
 }
 

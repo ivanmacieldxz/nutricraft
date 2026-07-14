@@ -20,6 +20,8 @@ import { revalidatePath } from "next/cache";
 import { MealDBService } from "@/services/mealdb";
 import { translateArray } from "@/services/translation";
 
+import { getNutritionForRecipe } from "@/services/nutrition";
+
 // ----------------------------------------------------------------------------
 // PLANIFICADOR SEMANAL
 // ----------------------------------------------------------------------------
@@ -105,6 +107,36 @@ export async function addRecipeToPlan({
         imageUrl,
       },
     });
+  }
+
+  // CACHING LOGIC: Check and cache nutrition for this recipe globally
+  const cachedNutrition = await prisma.recipeNutritionCache.findUnique({
+    where: { externalRecipeId }
+  });
+
+  if (!cachedNutrition) {
+    try {
+      const meal = await MealDBService.getMealById(externalRecipeId);
+      if (meal) {
+        const originalIngredients = meal.ingredients.map(i =>
+          i.measure ? `${i.measure} ${i.name}`.trim() : i.name
+        );
+        const nutrition = await getNutritionForRecipe(originalIngredients);
+        if (nutrition) {
+          await prisma.recipeNutritionCache.create({
+            data: {
+              externalRecipeId,
+              calories: nutrition.calories,
+              totalProtein: nutrition.totalProtein,
+              totalCarbs: nutrition.totalCarbs,
+              totalFat: nutrition.totalFat,
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.error(`Failed to cache nutrition for recipe ${externalRecipeId} during addRecipeToPlan`, error);
+    }
   }
 
   revalidatePath("/plans");

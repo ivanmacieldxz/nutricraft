@@ -53,29 +53,59 @@ export async function getWeeklyNutritionStats(weekStartDate: Date): Promise<Week
     };
   }
 
-  // Deduplicate recipes to minimize API calls
+  // Deduplicate recipes
   const uniqueRecipeIds = Array.from(new Set(plan.items.map(item => item.externalRecipeId)));
   const nutritionCache = new Map<string, NutritionData>();
 
-  // Fetch recipe details and nutrition in parallel batches
-  await Promise.all(
-    uniqueRecipeIds.map(async (recipeId) => {
-      try {
-        const meal = await MealDBService.getMealById(recipeId);
-        if (meal) {
-          const originalIngredients = meal.ingredients.map(i =>
-            i.measure ? `${i.measure} ${i.name}`.trim() : i.name
-          );
-          const nutrition = await getNutritionForRecipe(originalIngredients);
-          if (nutrition) {
-            nutritionCache.set(recipeId, nutrition);
+  // 1. Fetch from DB cache first
+  const cachedRecords = await prisma.recipeNutritionCache.findMany({
+    where: { externalRecipeId: { in: uniqueRecipeIds } }
+  });
+
+  for (const record of cachedRecords) {
+    nutritionCache.set(record.externalRecipeId, {
+      calories: record.calories,
+      totalProtein: record.totalProtein,
+      totalFat: record.totalFat,
+      totalCarbs: record.totalCarbs,
+    });
+  }
+
+  // 2. Identify missing records
+  const missingRecipeIds = uniqueRecipeIds.filter(id => !nutritionCache.has(id));
+
+  // 3. Fetch and cache missing records (Fallback)
+  if (missingRecipeIds.length > 0) {
+    await Promise.all(
+      missingRecipeIds.map(async (recipeId) => {
+        try {
+          const meal = await MealDBService.getMealById(recipeId);
+          if (meal) {
+            const originalIngredients = meal.ingredients.map(i =>
+              i.measure ? `${i.measure} ${i.name}`.trim() : i.name
+            );
+            const nutrition = await getNutritionForRecipe(originalIngredients);
+            if (nutrition) {
+              nutritionCache.set(recipeId, nutrition);
+              
+              // Save to DB so next time it's instant
+              await prisma.recipeNutritionCache.create({
+                data: {
+                  externalRecipeId: recipeId,
+                  calories: nutrition.calories,
+                  totalProtein: nutrition.totalProtein,
+                  totalCarbs: nutrition.totalCarbs,
+                  totalFat: nutrition.totalFat,
+                }
+              });
+            }
           }
+        } catch (error) {
+          console.error(`Failed to fetch and cache nutrition fallback for recipe ${recipeId}`, error);
         }
-      } catch (error) {
-        console.error(`Failed to fetch nutrition for recipe ${recipeId}`, error);
-      }
-    })
-  );
+      })
+    );
+  }
 
   let totalCalories = 0;
   let totalProtein = 0;
