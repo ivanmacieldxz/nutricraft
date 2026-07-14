@@ -78,7 +78,6 @@ model ShoppingListItem {
   quantity         Float
   unit             String
   isChecked        Boolean      @default(false)
-  isHidden         Boolean      @default(false)
 }
 
 model RecipeHistory {

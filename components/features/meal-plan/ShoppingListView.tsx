@@ -2,10 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { ShoppingList, ShoppingListItem } from "@prisma/client";
-import { generateShoppingList, toggleShoppingListItem, hideShoppingListItem } from "@/app/actions/mealplan";
+import { generateShoppingList, toggleShoppingListItem, deleteShoppingListItem, clearCheckedShoppingListItems } from "@/app/actions/mealplan";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, ShoppingCart, EyeOff } from "lucide-react";
+import { RefreshCw, ShoppingCart, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -40,18 +40,28 @@ export function ShoppingListView({ shoppingList, weekStartDate }: ShoppingListVi
     }
   };
 
-  const handleHide = async (e: React.MouseEvent, itemId: string) => {
+  const handleDelete = async (e: React.MouseEvent, itemId: string) => {
     e.stopPropagation();
     try {
-      await hideShoppingListItem(itemId);
-      toast.success("Ítem oculto");
+      await deleteShoppingListItem(itemId);
+      toast.success("Ítem eliminado");
     } catch (error) {
-      toast.error("Error al ocultar ítem");
+      toast.error("Error al eliminar ítem");
     }
   };
 
-  const pendingItems = shoppingList?.items.filter(i => !i.isChecked && !(i as any).isHidden) || [];
-  const checkedItems = shoppingList?.items.filter(i => i.isChecked && !(i as any).isHidden) || [];
+  const handleClearChecked = async () => {
+    if (!shoppingList) return;
+    try {
+      await clearCheckedShoppingListItems(shoppingList.id);
+      toast.success("Comprados vaciados");
+    } catch (error) {
+      toast.error("Error al vaciar comprados");
+    }
+  };
+
+  const pendingItems = shoppingList?.items.filter(i => !i.isChecked) || [];
+  const checkedItems = shoppingList?.items.filter(i => i.isChecked) || [];
 
   return (
     <div className="w-full max-w-3xl mx-auto space-y-8">
@@ -110,7 +120,17 @@ export function ShoppingListView({ shoppingList, weekStartDate }: ShoppingListVi
 
           {checkedItems.length > 0 && (
             <div className="space-y-3">
-              <h3 className="font-semibold text-lg border-b pb-2 text-muted-foreground">Comprados ({checkedItems.length})</h3>
+              <div className="flex items-center justify-between border-b pb-2">
+                <h3 className="font-semibold text-lg text-muted-foreground">Comprados ({checkedItems.length})</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearChecked}
+                  className="text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full h-8 px-3"
+                >
+                  Vaciar Comprados
+                </Button>
+              </div>
               <div className="grid gap-2">
                 {checkedItems.map((item) => (
                   <div
@@ -130,10 +150,10 @@ export function ShoppingListView({ shoppingList, weekStartDate }: ShoppingListVi
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                      onClick={(e) => handleHide(e, item.id)}
+                      onClick={(e) => handleDelete(e, item.id)}
                     >
-                      <EyeOff className="h-4 w-4" />
-                      <span className="sr-only">Ocultar ítem</span>
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Eliminar ítem</span>
                     </Button>
                   </div>
                 ))}
