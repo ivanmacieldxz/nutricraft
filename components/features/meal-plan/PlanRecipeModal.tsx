@@ -26,11 +26,12 @@ const MEAL_TYPES = [
 ];
 
 function getMonday(d: Date) {
-  const date = new Date(d);
-  const day = date.getDay();
-  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-  date.setDate(diff);
-  date.setHours(0, 0, 0, 0);
+  // Operar estrictamente en UTC para evitar desfasajes entre Cliente y Servidor
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = date.getUTCDay();
+  const diff = date.getUTCDate() - day + (day === 0 ? -6 : 1);
+  date.setUTCDate(diff);
+  date.setUTCHours(0, 0, 0, 0);
   return date;
 }
 
@@ -109,6 +110,7 @@ export function PlanRecipeModal({ recipe, hasAllergyWarning }: PlanRecipeModalPr
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger render={
         <Button 
+          type="button"
           variant="outline" 
           size="lg" 
           className="rounded-full flex-1 border-primary/20 hover:bg-primary/5 transition-all shadow-sm"
@@ -132,6 +134,7 @@ export function PlanRecipeModal({ recipe, hasAllergyWarning }: PlanRecipeModalPr
             <div className="grid grid-cols-4 gap-2">
               {DAYS.map((day, idx) => (
                 <button
+                  type="button"
                   key={day}
                   onClick={() => setSelectedDay(idx)}
                   className={cn(
@@ -152,6 +155,7 @@ export function PlanRecipeModal({ recipe, hasAllergyWarning }: PlanRecipeModalPr
             <div className="grid grid-cols-2 gap-2">
               {MEAL_TYPES.map((meal) => (
                 <button
+                  type="button"
                   key={meal.id}
                   onClick={() => setSelectedMeal(meal.id)}
                   className={cn(
@@ -169,10 +173,11 @@ export function PlanRecipeModal({ recipe, hasAllergyWarning }: PlanRecipeModalPr
         </div>
 
         <div className="flex justify-end gap-3 mt-2">
-          <Button variant="ghost" className="rounded-full" onClick={() => setIsOpen(false)}>
+          <Button type="button" variant="ghost" className="rounded-full" onClick={() => setIsOpen(false)}>
             Cancelar
           </Button>
           <Button 
+            type="button"
             className="rounded-full px-6" 
             onClick={handleSave}
             disabled={isPending || selectedDay === null || !selectedMeal}

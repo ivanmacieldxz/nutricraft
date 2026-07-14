@@ -58,7 +58,7 @@ export function WeeklyGrid({ plan, weekStartDate }: WeeklyGridProps) {
       <div className="flex flex-col gap-8 xl:hidden">
         {DAYS.map((day, dayIdx) => (
           <div key={day} className="flex flex-col gap-3">
-            <h3 className="font-bold text-xl text-foreground border-b border-border/50 pb-2">{day}</h3>
+            <h3 className="font-bold text-xl text-foreground border-b border-border pb-2">{day}</h3>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {MEAL_TYPES.map(meal => {
                 const item = getItem(dayIdx, meal.id);
@@ -97,7 +97,7 @@ export function WeeklyGrid({ plan, weekStartDate }: WeeklyGridProps) {
                       ) : (
                         <button
                           onClick={() => handleOpenSearch(dayIdx, meal.id)}
-                          className="w-full h-full rounded-xl border-2 border-dashed border-border/60 hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-primary group/btn"
+                          className="w-full h-full rounded-xl border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-primary group/btn"
                         >
                           <Plus className="w-6 h-6 group-hover/btn:scale-110 transition-transform" />
                           <span className="text-xs font-medium">Agregar</span>
@@ -116,11 +116,11 @@ export function WeeklyGrid({ plan, weekStartDate }: WeeklyGridProps) {
       <div className="hidden xl:block w-full overflow-x-auto">
         <div className="min-w-[800px] grid grid-cols-8 gap-4">
           {/* Header de la tabla */}
-          <div className="flex items-end pb-4 font-bold text-muted-foreground border-b border-border/50">
+          <div className="flex items-end pb-4 font-bold text-muted-foreground border-b border-border">
             <div className="text-sm uppercase tracking-wider">Comida</div>
           </div>
           {DAYS.map((day, idx) => (
-            <div key={day} className="flex flex-col items-center justify-end pb-4 border-b border-border/50">
+            <div key={day} className="flex flex-col items-center justify-end pb-4 border-b border-border">
               <span className="font-bold text-sm text-foreground/80">{day}</span>
             </div>
           ))}
@@ -168,7 +168,7 @@ export function WeeklyGrid({ plan, weekStartDate }: WeeklyGridProps) {
                     ) : (
                       <button
                         onClick={() => handleOpenSearch(dayIdx, meal.id)}
-                        className="w-full h-full rounded-xl border-2 border-dashed border-border/60 hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-primary group/btn"
+                        className="w-full h-full rounded-xl border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-primary group/btn"
                       >
                         <Plus className="w-6 h-6 group-hover/btn:scale-110 transition-transform" />
                         <span className="text-xs font-medium">Agregar</span>

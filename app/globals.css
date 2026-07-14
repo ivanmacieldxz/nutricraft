@@ -43,6 +43,7 @@
   so we've added these base styles back to bring back the v3 behavior.
 */
 @layer base {
+
   *,
   ::after,
   ::before,
@@ -54,69 +55,85 @@
 
 :root {
   /* Light Theme - Pink Tinted */
-  --background: 354 70% 95%;     /* Rosa como el del color principal pero más claro */
-  --foreground: 354 30% 20%;     /* Dark Pinkish Gray */
-  
+  --background: 354 70% 95%;
+  /* Rosa como el del color principal pero más claro */
+  --foreground: 354 30% 20%;
+  /* Dark Pinkish Gray */
+
   --card: 354 40% 99%;
   --card-foreground: 354 30% 20%;
-  
+
   --popover: 354 40% 99%;
   --popover-foreground: 354 30% 20%;
-  
-  --primary: 354 70% 45%;        /* Strong Pink for contrast */
-  --primary-foreground: 0 0% 98%; /* White text */
-  
-  --secondary: 133 40% 45%;      /* Strong Mint */
-  --secondary-foreground: 0 0% 98%; /* White text */
-  
+
+  --primary: 354 70% 45%;
+  /* Strong Pink for contrast */
+  --primary-foreground: 0 0% 98%;
+  /* White text */
+
+  --secondary: 133 40% 45%;
+  /* Strong Mint */
+  --secondary-foreground: 0 0% 98%;
+  /* White text */
+
   --muted: 354 40% 92%;
   --muted-foreground: 354 20% 45%;
-  
+
   --accent: 354 70% 45%;
   --accent-foreground: 0 0% 98%;
-  
+
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 98%;
-  
+
   --border: 354 30% 85%;
   --input: 354 30% 85%;
   --ring: 354 70% 45%;
-  
+
   --radius: 1rem;
   --bg-pattern: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.04'%3E%3Cpath d='M50 50c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10s-10-4.477-10-10 4.477-10 10-10zM10 10c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10S0 25.523 0 20s4.477-10 10-10zm10 8c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm40 40c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+
+  --chart-hover-bg: 133 40% 65%;
+  --chart-hover-border: 133 40% 55%;
 }
 
 .dark {
-    /* Pastel Dark Theme */
-    --background: 240 10% 12%;   /* Dark Gray */
-    --foreground: 0 0% 95%;      /* Off-White */
-    
-    --card: 240 10% 15%;
-    --card-foreground: 0 0% 95%;
-    
-    --popover: 240 10% 15%;
-    --popover-foreground: 0 0% 95%;
-    
-    --primary: 354 40% 70%;      /* Muted Pastel Pink */
-    --primary-foreground: 0 0% 10%;
-    
-    --secondary: 133 30% 65%;    /* Muted Pastel Mint */
-    --secondary-foreground: 0 0% 10%;
-    
-    --muted: 240 10% 20%;
-    --muted-foreground: 240 5% 65%;
-    
-    --accent: 354 40% 70%;
-    --accent-foreground: 0 0% 10%;
-    
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    
-    --border: 240 10% 25%;
-    --input: 240 10% 25%;
-    --ring: 354 40% 70%;
-    
-    --bg-pattern: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M50 50c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10s-10-4.477-10-10 4.477-10 10-10zM10 10c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10S0 25.523 0 20s4.477-10 10-10zm10 8c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm40 40c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  /* Pastel Dark Theme */
+  --background: 240 10% 12%;
+  /* Dark Gray */
+  --foreground: 0 0% 95%;
+  /* Off-White */
+
+  --card: 240 10% 15%;
+  --card-foreground: 0 0% 95%;
+
+  --popover: 240 10% 15%;
+  --popover-foreground: 0 0% 95%;
+
+  --primary: 354 40% 70%;
+  /* Muted Pastel Pink */
+  --primary-foreground: 0 0% 10%;
+
+  --secondary: 133 30% 65%;
+  /* Muted Pastel Mint */
+  --secondary-foreground: 0 0% 10%;
+
+  --muted: 240 10% 20%;
+  --muted-foreground: 240 5% 65%;
+
+  --accent: 354 40% 70%;
+  --accent-foreground: 0 0% 10%;
+
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 240 10% 25%;
+  --input: 240 10% 25%;
+  --ring: 354 40% 70%;
+
+  --bg-pattern: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M50 50c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10s-10-4.477-10-10 4.477-10 10-10zM10 10c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10S0 25.523 0 20s4.477-10 10-10zm10 8c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm40 40c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+
+  --chart-hover-bg: 133 30% 35%;
+  --chart-hover-border: 133 30% 45%;
 }
 
 @layer base {
@@ -126,5 +143,25 @@
     background-attachment: fixed;
     color: var(--color-foreground);
     font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  }
+}
+
+@layer utilities {
+  .glass-badge {
+    background-color: color-mix(in srgb, var(--color-secondary) 50%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid color-mix(in srgb, var(--color-secondary) 80%, transparent);
+  }
+
+  .glass-btn {
+    background-color: color-mix(in srgb, var(--color-primary) 50%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 80%, transparent);
+  }
+
+  .glass-btn:hover {
+    background-color: color-mix(in srgb, var(--color-primary) 80%, transparent);
   }
 }

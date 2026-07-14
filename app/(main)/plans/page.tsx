@@ -7,11 +7,12 @@ import { ShoppingListView } from "@/components/features/meal-plan/ShoppingListVi
 import { Calendar, ShoppingBag } from "lucide-react";
 
 function getMonday(d: Date) {
-  const date = new Date(d);
-  const day = date.getDay();
-  const diff = date.getDate() - day + (day === 0 ? -6 : 1); // ajustar si es domingo
-  date.setDate(diff);
-  date.setHours(0, 0, 0, 0);
+  // Operar estrictamente en UTC para evitar desfasajes entre Cliente y Servidor
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = date.getUTCDay();
+  const diff = date.getUTCDate() - day + (day === 0 ? -6 : 1); // ajustar si es domingo
+  date.setUTCDate(diff);
+  date.setUTCHours(0, 0, 0, 0);
   return date;
 }
 
@@ -44,7 +45,7 @@ export default async function PlansPage(props: {
           </p>
         </div>
 
-        <div className="text-sm font-medium bg-secondary/50 backdrop-blur-xl text-secondary-foreground px-4 py-2 rounded-xl border border-secondary/20 flex items-center shadow-sm">
+        <div className="text-sm font-medium glass-badge text-secondary-foreground px-4 py-2 rounded-xl flex items-center shadow-md">
           <Calendar className="w-4 h-4 mr-2" />
           Semana del {weekStartDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
         </div>

@@ -20,6 +20,8 @@ import { revalidatePath } from "next/cache";
 import { MealDBService } from "@/services/mealdb";
 import { translateArray } from "@/services/translation";
 
+import { getNutritionForRecipe } from "@/services/nutrition";
+
 // ----------------------------------------------------------------------------
 // PLANIFICADOR SEMANAL
 // ----------------------------------------------------------------------------
@@ -105,6 +107,36 @@ export async function addRecipeToPlan({
         imageUrl,
       },
     });
+  }
+
+  // CACHING LOGIC: Check and cache nutrition for this recipe globally
+  const cachedNutrition = await prisma.recipeNutritionCache.findUnique({
+    where: { externalRecipeId }
+  });
+
+  if (!cachedNutrition) {
+    try {
+      const meal = await MealDBService.getMealById(externalRecipeId);
+      if (meal) {
+        const originalIngredients = meal.ingredients.map(i =>
+          i.measure ? `${i.measure} ${i.name}`.trim() : i.name
+        );
+        const nutrition = await getNutritionForRecipe(originalIngredients);
+        if (nutrition) {
+          await prisma.recipeNutritionCache.create({
+            data: {
+              externalRecipeId,
+              calories: nutrition.calories,
+              totalProtein: nutrition.totalProtein,
+              totalCarbs: nutrition.totalCarbs,
+              totalFat: nutrition.totalFat,
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.error(`Failed to cache nutrition for recipe ${externalRecipeId} during addRecipeToPlan`, error);
+    }
   }
 
   revalidatePath("/plans");
@@ -225,17 +257,20 @@ export async function generateShoppingList(weekStartDate: Date) {
     where: { userId, weekStartDate },
   });
 
-  let existingCheckedMap = new Map<string, { isChecked: boolean, isHidden: boolean }>();
+  let existingCheckedMap = new Map<string, { isChecked: boolean }>();
+  let deletedIngredients: string[] = [];
+
   if (shoppingList) {
+    deletedIngredients = shoppingList.deletedItems || [];
+
     const existingItems = await prisma.shoppingListItem.findMany({
       where: { shoppingListId: shoppingList.id },
-      select: { ingredientName: true, isChecked: true, isHidden: true }
+      select: { ingredientName: true, isChecked: true }
     });
     
     existingItems.forEach(item => {
       existingCheckedMap.set(item.ingredientName, {
-        isChecked: item.isChecked,
-        isHidden: item.isHidden
+        isChecked: item.isChecked
       });
     });
 
@@ -244,6 +279,7 @@ export async function generateShoppingList(weekStartDate: Date) {
       where: { shoppingListId: shoppingList.id },
     });
   }
+
   if (!shoppingList) {
     await ensureUserExists(userId);
     shoppingList = await prisma.shoppingList.create({
@@ -254,15 +290,19 @@ export async function generateShoppingList(weekStartDate: Date) {
     });
   }
 
+  // Filtrar los items que el usuario borró previamente (hard delete con registro)
+  const itemsToCreate = newShoppingListItems.filter(
+    item => !deletedIngredients.includes(item.ingredientName)
+  );
+
   // Insertar los nuevos
   await prisma.shoppingListItem.createMany({
-    data: newShoppingListItems.map(item => {
+    data: itemsToCreate.map(item => {
       const prev = existingCheckedMap.get(item.ingredientName);
       return {
         shoppingListId: shoppingList!.id,
         ...item,
         isChecked: prev?.isChecked || false,
-        isHidden: prev?.isHidden || false,
       };
     }),
   });
@@ -293,7 +333,7 @@ export async function toggleShoppingListItem(itemId: string, isChecked: boolean)
   return { success: true };
 }
 
-export async function hideShoppingListItem(itemId: string) {
+export async function deleteShoppingListItem(itemId: string) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
@@ -306,9 +346,89 @@ export async function hideShoppingListItem(itemId: string) {
     throw new Error("Not found or unauthorized");
   }
 
-  await prisma.shoppingListItem.update({
-    where: { id: itemId },
-    data: { isHidden: true },
+  await prisma.$transaction([
+    prisma.shoppingList.update({
+      where: { id: item.shoppingListId },
+      data: {
+        deletedItems: {
+          push: item.ingredientName,
+        },
+      },
+    }),
+    prisma.shoppingListItem.delete({
+      where: { id: itemId },
+    }),
+  ]);
+
+  revalidatePath("/plans");
+  return { success: true };
+}
+
+export async function clearCheckedShoppingListItems(shoppingListId: string) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const list = await prisma.shoppingList.findUnique({
+    where: { id: shoppingListId },
+  });
+
+  if (!list || list.userId !== userId) {
+    throw new Error("Not found or unauthorized");
+  }
+
+  const itemsToDelete = await prisma.shoppingListItem.findMany({
+    where: {
+      shoppingListId,
+      isChecked: true,
+    },
+    select: { id: true, ingredientName: true },
+  });
+
+  if (itemsToDelete.length > 0) {
+    const ingredientNames = itemsToDelete.map(item => item.ingredientName);
+
+    await prisma.$transaction([
+      prisma.shoppingList.update({
+        where: { id: shoppingListId },
+        data: {
+          deletedItems: {
+            push: ingredientNames,
+          },
+        },
+      }),
+      prisma.shoppingListItem.deleteMany({
+        where: {
+          shoppingListId,
+          isChecked: true,
+        },
+      }),
+    ]);
+  }
+
+  revalidatePath("/plans");
+  return { success: true };
+}
+
+export async function markAllAsCheckedShoppingListItems(shoppingListId: string) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const list = await prisma.shoppingList.findUnique({
+    where: { id: shoppingListId },
+  });
+
+  if (!list || list.userId !== userId) {
+    throw new Error("Not found or unauthorized");
+  }
+
+  await prisma.shoppingListItem.updateMany({
+    where: {
+      shoppingListId,
+      isChecked: false,
+    },
+    data: {
+      isChecked: true,
+    },
   });
 
   revalidatePath("/plans");

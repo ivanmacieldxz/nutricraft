@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   title: "NutriCraft",
   description: "Explora recetas, gestiona tu heladera y planifica tus comidas semanales.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon-192x192.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

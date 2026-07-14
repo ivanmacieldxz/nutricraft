@@ -68,6 +68,7 @@ model ShoppingList {
   user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   weekStartDate    DateTime           // A qué semana corresponde
   items            ShoppingListItem[]
+  deletedItems     String[]           @default([])
 }
 
 model ShoppingListItem {
@@ -78,7 +79,6 @@ model ShoppingListItem {
   quantity         Float
   unit             String
   isChecked        Boolean      @default(false)
-  isHidden         Boolean      @default(false)
 }
 
 model RecipeHistory {
@@ -91,4 +91,15 @@ model RecipeHistory {
   visitedAt        DateTime @default(now())
 
   @@unique([userId, externalRecipeId])
+}
+
+model RecipeNutritionCache {
+  id               String   @id @default(uuid())
+  externalRecipeId String   @unique
+  calories         Float
+  totalProtein     Float
+  totalCarbs       Float
+  totalFat         Float
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }

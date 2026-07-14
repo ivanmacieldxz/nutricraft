@@ -216,7 +216,7 @@ export function PreferencesForm({ initialData }: PreferencesFormProps) {
 
       {/* Botón Guardar */}
       <div className="flex justify-end">
-        <Button onClick={handleSubmit} disabled={loading} size="lg" className="w-full sm:w-auto px-8 rounded-xl">
+        <Button onClick={handleSubmit} disabled={loading} size="lg" className="w-full sm:w-auto px-8 rounded-xl glass-btn shadow-sm transition-colors text-primary-foreground">
           <Save className="w-4 h-4 mr-2" />
           {loading ? "Guardando..." : "Guardar Preferencias"}
         </Button>
