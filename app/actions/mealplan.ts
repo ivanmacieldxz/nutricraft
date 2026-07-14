@@ -343,3 +343,26 @@ export async function deleteShoppingListItem(itemId: string) {
   revalidatePath("/plans");
   return { success: true };
 }
+
+export async function clearCheckedShoppingListItems(shoppingListId: string) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const list = await prisma.shoppingList.findUnique({
+    where: { id: shoppingListId },
+  });
+
+  if (!list || list.userId !== userId) {
+    throw new Error("Not found or unauthorized");
+  }
+
+  await prisma.shoppingListItem.deleteMany({
+    where: {
+      shoppingListId,
+      isChecked: true,
+    },
+  });
+
+  revalidatePath("/plans");
+  return { success: true };
+}

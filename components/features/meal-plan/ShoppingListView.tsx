@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { ShoppingList, ShoppingListItem } from "@prisma/client";
-import { generateShoppingList, toggleShoppingListItem, deleteShoppingListItem } from "@/app/actions/mealplan";
+import { generateShoppingList, toggleShoppingListItem, deleteShoppingListItem, clearCheckedShoppingListItems } from "@/app/actions/mealplan";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, ShoppingCart, Trash2 } from "lucide-react";
@@ -47,6 +47,16 @@ export function ShoppingListView({ shoppingList, weekStartDate }: ShoppingListVi
       toast.success("Ítem eliminado");
     } catch (error) {
       toast.error("Error al eliminar ítem");
+    }
+  };
+
+  const handleClearChecked = async () => {
+    if (!shoppingList) return;
+    try {
+      await clearCheckedShoppingListItems(shoppingList.id);
+      toast.success("Comprados vaciados");
+    } catch (error) {
+      toast.error("Error al vaciar comprados");
     }
   };
 
@@ -110,7 +120,17 @@ export function ShoppingListView({ shoppingList, weekStartDate }: ShoppingListVi
 
           {checkedItems.length > 0 && (
             <div className="space-y-3">
-              <h3 className="font-semibold text-lg border-b pb-2 text-muted-foreground">Comprados ({checkedItems.length})</h3>
+              <div className="flex items-center justify-between border-b pb-2">
+                <h3 className="font-semibold text-lg text-muted-foreground">Comprados ({checkedItems.length})</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearChecked}
+                  className="text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full h-8 px-3"
+                >
+                  Vaciar Comprados
+                </Button>
+              </div>
               <div className="grid gap-2">
                 {checkedItems.map((item) => (
                   <div
