@@ -2,10 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { ShoppingList, ShoppingListItem } from "@prisma/client";
-import { generateShoppingList, toggleShoppingListItem, hideShoppingListItem } from "@/app/actions/mealplan";
+import { generateShoppingList, toggleShoppingListItem, deleteShoppingListItem } from "@/app/actions/mealplan";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, ShoppingCart, EyeOff } from "lucide-react";
+import { RefreshCw, ShoppingCart, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -40,13 +40,13 @@ export function ShoppingListView({ shoppingList, weekStartDate }: ShoppingListVi
     }
   };
 
-  const handleHide = async (e: React.MouseEvent, itemId: string) => {
+  const handleDelete = async (e: React.MouseEvent, itemId: string) => {
     e.stopPropagation();
     try {
-      await hideShoppingListItem(itemId);
-      toast.success("Ítem oculto");
+      await deleteShoppingListItem(itemId);
+      toast.success("Ítem eliminado");
     } catch (error) {
-      toast.error("Error al ocultar ítem");
+      toast.error("Error al eliminar ítem");
     }
   };
 
@@ -130,10 +130,10 @@ export function ShoppingListView({ shoppingList, weekStartDate }: ShoppingListVi
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                      onClick={(e) => handleHide(e, item.id)}
+                      onClick={(e) => handleDelete(e, item.id)}
                     >
-                      <EyeOff className="h-4 w-4" />
-                      <span className="sr-only">Ocultar ítem</span>
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Eliminar ítem</span>
                     </Button>
                   </div>
                 ))}

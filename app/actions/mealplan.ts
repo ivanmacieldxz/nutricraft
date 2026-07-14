@@ -323,7 +323,7 @@ export async function toggleShoppingListItem(itemId: string, isChecked: boolean)
   return { success: true };
 }
 
-export async function hideShoppingListItem(itemId: string) {
+export async function deleteShoppingListItem(itemId: string) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
@@ -336,9 +336,8 @@ export async function hideShoppingListItem(itemId: string) {
     throw new Error("Not found or unauthorized");
   }
 
-  await prisma.shoppingListItem.update({
+  await prisma.shoppingListItem.delete({
     where: { id: itemId },
-    data: { isHidden: true },
   });
 
   revalidatePath("/plans");
