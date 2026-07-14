@@ -68,6 +68,7 @@ model ShoppingList {
   user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   weekStartDate    DateTime           // A qué semana corresponde
   items            ShoppingListItem[]
+  deletedItems     String[]           @default([])
 }
 
 model ShoppingListItem {

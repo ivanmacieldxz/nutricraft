@@ -258,7 +258,11 @@ export async function generateShoppingList(weekStartDate: Date) {
   });
 
   let existingCheckedMap = new Map<string, { isChecked: boolean }>();
+  let deletedIngredients: string[] = [];
+
   if (shoppingList) {
+    deletedIngredients = shoppingList.deletedItems || [];
+
     const existingItems = await prisma.shoppingListItem.findMany({
       where: { shoppingListId: shoppingList.id },
       select: { ingredientName: true, isChecked: true }
@@ -275,6 +279,7 @@ export async function generateShoppingList(weekStartDate: Date) {
       where: { shoppingListId: shoppingList.id },
     });
   }
+
   if (!shoppingList) {
     await ensureUserExists(userId);
     shoppingList = await prisma.shoppingList.create({
@@ -285,9 +290,14 @@ export async function generateShoppingList(weekStartDate: Date) {
     });
   }
 
+  // Filtrar los items que el usuario borró previamente (hard delete con registro)
+  const itemsToCreate = newShoppingListItems.filter(
+    item => !deletedIngredients.includes(item.ingredientName)
+  );
+
   // Insertar los nuevos
   await prisma.shoppingListItem.createMany({
-    data: newShoppingListItems.map(item => {
+    data: itemsToCreate.map(item => {
       const prev = existingCheckedMap.get(item.ingredientName);
       return {
         shoppingListId: shoppingList!.id,
@@ -336,9 +346,19 @@ export async function deleteShoppingListItem(itemId: string) {
     throw new Error("Not found or unauthorized");
   }
 
-  await prisma.shoppingListItem.delete({
-    where: { id: itemId },
-  });
+  await prisma.$transaction([
+    prisma.shoppingList.update({
+      where: { id: item.shoppingListId },
+      data: {
+        deletedItems: {
+          push: item.ingredientName,
+        },
+      },
+    }),
+    prisma.shoppingListItem.delete({
+      where: { id: itemId },
+    }),
+  ]);
 
   revalidatePath("/plans");
   return { success: true };
@@ -356,9 +376,57 @@ export async function clearCheckedShoppingListItems(shoppingListId: string) {
     throw new Error("Not found or unauthorized");
   }
 
-  await prisma.shoppingListItem.deleteMany({
+  const itemsToDelete = await prisma.shoppingListItem.findMany({
     where: {
       shoppingListId,
+      isChecked: true,
+    },
+    select: { id: true, ingredientName: true },
+  });
+
+  if (itemsToDelete.length > 0) {
+    const ingredientNames = itemsToDelete.map(item => item.ingredientName);
+
+    await prisma.$transaction([
+      prisma.shoppingList.update({
+        where: { id: shoppingListId },
+        data: {
+          deletedItems: {
+            push: ingredientNames,
+          },
+        },
+      }),
+      prisma.shoppingListItem.deleteMany({
+        where: {
+          shoppingListId,
+          isChecked: true,
+        },
+      }),
+    ]);
+  }
+
+  revalidatePath("/plans");
+  return { success: true };
+}
+
+export async function markAllAsCheckedShoppingListItems(shoppingListId: string) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const list = await prisma.shoppingList.findUnique({
+    where: { id: shoppingListId },
+  });
+
+  if (!list || list.userId !== userId) {
+    throw new Error("Not found or unauthorized");
+  }
+
+  await prisma.shoppingListItem.updateMany({
+    where: {
+      shoppingListId,
+      isChecked: false,
+    },
+    data: {
       isChecked: true,
     },
   });
