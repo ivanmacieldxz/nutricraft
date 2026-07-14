@@ -45,7 +45,7 @@ export default async function PlansPage(props: {
           </p>
         </div>
 
-        <div className="text-sm font-medium bg-secondary/50 backdrop-blur-xl text-secondary-foreground px-4 py-2 rounded-xl border border-secondary/20 flex items-center shadow-sm">
+        <div className="text-sm font-medium glass-badge text-secondary-foreground px-4 py-2 rounded-xl flex items-center shadow-md">
           <Calendar className="w-4 h-4 mr-2" />
           Semana del {weekStartDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
         </div>

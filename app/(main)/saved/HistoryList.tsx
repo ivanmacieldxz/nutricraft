@@ -69,11 +69,10 @@ export function HistoryList({ initialData, initialHasMore }: HistoryListProps) {
       {hasMore && (
         <div className="flex justify-center pt-4">
           <Button 
-            variant="outline" 
             size="lg" 
             onClick={loadMore} 
             disabled={loading}
-            className="rounded-full px-8 bg-card/50 backdrop-blur-md hover:bg-primary hover:text-primary-foreground"
+            className="rounded-full px-8 glass-btn text-primary-foreground shadow-sm transition-colors"
           >
             {loading ? "Cargando..." : "Cargar más"}
           </Button>
