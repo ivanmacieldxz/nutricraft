@@ -50,8 +50,8 @@ export function ShoppingListView({ shoppingList, weekStartDate }: ShoppingListVi
     }
   };
 
-  const pendingItems = shoppingList?.items.filter(i => !i.isChecked && !(i as any).isHidden) || [];
-  const checkedItems = shoppingList?.items.filter(i => i.isChecked && !(i as any).isHidden) || [];
+  const pendingItems = shoppingList?.items.filter(i => !i.isChecked) || [];
+  const checkedItems = shoppingList?.items.filter(i => i.isChecked) || [];
 
   return (
     <div className="w-full max-w-3xl mx-auto space-y-8">

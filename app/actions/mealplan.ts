@@ -257,17 +257,16 @@ export async function generateShoppingList(weekStartDate: Date) {
     where: { userId, weekStartDate },
   });
 
-  let existingCheckedMap = new Map<string, { isChecked: boolean, isHidden: boolean }>();
+  let existingCheckedMap = new Map<string, { isChecked: boolean }>();
   if (shoppingList) {
     const existingItems = await prisma.shoppingListItem.findMany({
       where: { shoppingListId: shoppingList.id },
-      select: { ingredientName: true, isChecked: true, isHidden: true }
+      select: { ingredientName: true, isChecked: true }
     });
     
     existingItems.forEach(item => {
       existingCheckedMap.set(item.ingredientName, {
-        isChecked: item.isChecked,
-        isHidden: item.isHidden
+        isChecked: item.isChecked
       });
     });
 
@@ -294,7 +293,6 @@ export async function generateShoppingList(weekStartDate: Date) {
         shoppingListId: shoppingList!.id,
         ...item,
         isChecked: prev?.isChecked || false,
-        isHidden: prev?.isHidden || false,
       };
     }),
   });
