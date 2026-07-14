@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { ShoppingList, ShoppingListItem } from "@prisma/client";
-import { generateShoppingList, toggleShoppingListItem, deleteShoppingListItem, clearCheckedShoppingListItems } from "@/app/actions/mealplan";
+import { generateShoppingList, toggleShoppingListItem, deleteShoppingListItem, clearCheckedShoppingListItems, markAllAsCheckedShoppingListItems } from "@/app/actions/mealplan";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, ShoppingCart, Trash2 } from "lucide-react";
@@ -60,6 +60,16 @@ export function ShoppingListView({ shoppingList, weekStartDate }: ShoppingListVi
     }
   };
 
+  const handleMarkAllAsChecked = async () => {
+    if (!shoppingList) return;
+    try {
+      await markAllAsCheckedShoppingListItems(shoppingList.id);
+      toast.success("Todos marcados como comprados");
+    } catch (error) {
+      toast.error("Error al marcar como comprados");
+    }
+  };
+
   const pendingItems = shoppingList?.items.filter(i => !i.isChecked) || [];
   const checkedItems = shoppingList?.items.filter(i => i.isChecked) || [];
 
@@ -96,7 +106,17 @@ export function ShoppingListView({ shoppingList, weekStartDate }: ShoppingListVi
           
           {pendingItems.length > 0 && (
             <div className="space-y-3">
-              <h3 className="font-semibold text-lg border-b pb-2">Pendientes ({pendingItems.length})</h3>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-2 gap-2">
+                <h3 className="font-semibold text-lg">Pendientes ({pendingItems.length})</h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleMarkAllAsChecked}
+                  className="text-xs rounded-full h-8 px-3 shrink-0"
+                >
+                  Marcar todos como comprados
+                </Button>
+              </div>
               <div className="grid gap-2">
                 {pendingItems.map((item) => (
                   <div
@@ -120,13 +140,13 @@ export function ShoppingListView({ shoppingList, weekStartDate }: ShoppingListVi
 
           {checkedItems.length > 0 && (
             <div className="space-y-3">
-              <div className="flex items-center justify-between border-b pb-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-2 gap-2">
                 <h3 className="font-semibold text-lg text-muted-foreground">Comprados ({checkedItems.length})</h3>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={handleClearChecked}
-                  className="text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full h-8 px-3"
+                  className="text-xs text-destructive border-destructive/30 hover:text-destructive hover:bg-destructive/10 rounded-full h-8 px-3 shrink-0"
                 >
                   Vaciar Comprados
                 </Button>

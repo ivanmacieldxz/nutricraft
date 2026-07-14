@@ -408,3 +408,29 @@ export async function clearCheckedShoppingListItems(shoppingListId: string) {
   revalidatePath("/plans");
   return { success: true };
 }
+
+export async function markAllAsCheckedShoppingListItems(shoppingListId: string) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const list = await prisma.shoppingList.findUnique({
+    where: { id: shoppingListId },
+  });
+
+  if (!list || list.userId !== userId) {
+    throw new Error("Not found or unauthorized");
+  }
+
+  await prisma.shoppingListItem.updateMany({
+    where: {
+      shoppingListId,
+      isChecked: false,
+    },
+    data: {
+      isChecked: true,
+    },
+  });
+
+  revalidatePath("/plans");
+  return { success: true };
+}
