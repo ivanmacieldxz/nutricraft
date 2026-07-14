@@ -56,7 +56,7 @@ export default async function NutritionDashboardPage(props: {
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col gap-6">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-foreground">Dashboard Nutricional</h2>
           <p className="text-muted-foreground mt-1">
@@ -64,7 +64,7 @@ export default async function NutritionDashboardPage(props: {
           </p>
         </div>
 
-        <div className="text-sm font-medium bg-secondary/50 backdrop-blur-xl text-secondary-foreground px-4 py-2 rounded-xl border border-secondary/20 flex items-center shadow-sm">
+        <div className="text-sm font-medium glass-badge text-secondary-foreground px-4 py-2 rounded-xl flex items-center shadow-md">
           Semana del {weekStartDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
         </div>
       </div>

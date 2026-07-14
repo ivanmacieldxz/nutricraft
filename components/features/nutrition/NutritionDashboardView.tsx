@@ -80,7 +80,7 @@ export function NutritionDashboardView({ stats, preferences }: Props) {
           <span className="font-medium">{label}</span>
           <span className="text-muted-foreground">{Math.round(current)} / {goal} {unit}</span>
         </div>
-        <div className="w-full bg-secondary h-3 rounded-full overflow-hidden">
+        <div className="w-full bg-primary/20 h-3 rounded-full overflow-hidden">
           <div 
             className={`h-full rounded-full transition-all duration-1000 ${colorClass}`}
             style={{ width: `${percentage}%` }}
@@ -184,10 +184,10 @@ export function NutritionDashboardView({ stats, preferences }: Props) {
             <BarChart data={weeklyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground)/0.2)" />
               <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} dy={10} />
-              <YAxis yAxisId="left" orientation="left" stroke="none" tick={{ fill: 'hsl(var(--emerald-500))', fontSize: 12 }} />
+              <YAxis yAxisId="left" orientation="left" stroke="none" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
               <YAxis yAxisId="right" orientation="right" stroke="none" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
               <Tooltip 
-                cursor={{ fill: 'hsl(var(--secondary))' }}
+                cursor={{ fill: 'hsl(var(--chart-hover-bg) / 0.4)', stroke: 'hsl(var(--chart-hover-border) / 0.5)', strokeWidth: 1 }}
                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', backgroundColor: 'hsl(var(--background))', color: 'hsl(var(--foreground))' }}
               />
               <Legend wrapperStyle={{ paddingTop: '20px' }} />
